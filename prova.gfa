@@ -1,0 +1,10 @@
+H	VN:Z:1.0
+S	1	AAA
+L	1	+	2	+	0M
+S	2	TTT
+S	3	CCC
+L	3	+	4	+	0M
+S	4	GGG
+
+P	NC_017626-EC042_RS02380-1-phosphatidylglycerophosphatase_A	1+,2+	*
+P	NC_017626-EC042_RS02380-1-phosphatidylglycerophosphatase_b	3+,4+	*
