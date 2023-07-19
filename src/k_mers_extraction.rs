@@ -3,49 +3,48 @@ use std::vec;
 use crate::graph_parser::PathGraph;
 
 pub fn extract_kmers(graph: &PathGraph, k: usize) {
+    //POSITIONS DEVE ESSERE UNA CODA
     let graph_len = graph.lnz.len();
     let starting_positions = graph.succ_hash.get_succs_and_paths(0);
-
+    let mut positions = vec![];
     for (path_start, _) in starting_positions {
-        let mut window_pos = path_start;
+        positions.push(path_start);
+    }
         
-        let mut kmer = vec![graph.lnz[window_pos]];
+    for window_pos in &mut positions {
+            let mut kmer = vec![];
+            recursive_extraction(graph, &mut kmer, k, *window_pos);
+            println!("{:?}", window_pos);
 
-        while window_pos < graph_len - 1 {
-            let mut idx = window_pos;
-            while kmer.len() < k {
-                println!("{idx}");
-               
-                if !graph.nws[idx] {
-                    idx += 1;
-                    kmer.push(graph.lnz[idx]);
-                } else {
-                    println!("ELSE");
-                    for (succ_idx, _) in graph.succ_hash.get_succs_and_paths(window_pos + idx) {
-                        recursive_extraction(graph, &mut kmer, k, succ_idx);
-                    }
-                   
-                }
+            if graph.nws[*window_pos] {
+
+            } else {
+                positions.push(*window_pos + 1)
             }
-            println!("MAIN {:?}", kmer);
-            window_pos += 1;
+
     
-            }
-        }
+    }
+
     }
 
     fn recursive_extraction(graph: &PathGraph, kmer: &mut Vec<char>, k: usize, mut idx: usize) {
+        
         kmer.push(graph.lnz[idx]);
-        while kmer.len() < k {
+        while kmer.len() < k && idx < graph.lnz.len() - 1 {
+            
             if !graph.nws[idx] {
                 idx += 1;
                 kmer.push(graph.lnz[idx]);
             } else {
                 for (succ_idx, _) in graph.succ_hash.get_succs_and_paths(idx) {
-                    recursive_extraction(graph, kmer, k, succ_idx);
+                    if graph.lnz[succ_idx] != 'F' {
+                        recursive_extraction(graph, kmer, k, succ_idx);
+                    } else {
+                        return;
+                    }
                 }
                
             }
         }
-        println!("RECU {:?}", kmer)
+        println!("{:?}", kmer)
     }
