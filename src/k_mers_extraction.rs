@@ -112,8 +112,6 @@ fn recursive_extraction(
             found_kmers.insert(loc_kmer.clone(), (kmer_start, loc_paths.clone()));
             unique_kmers.insert(loc_kmer.clone(), (kmer_start, loc_paths.clone()));
         }
-
-        //println!("K-MER: {:?}\tPATHS: {:?}", loc_kmer.clone(), loc_paths);
     }
 }
 
@@ -136,7 +134,10 @@ pub fn filter_read_kmers(
     candidate_kmers
 }
 
-pub fn find_recomb_kmers(kmers: &Vec<(usize, BitVec)>) {
+pub fn find_recomb_kmers(
+    kmers: &Vec<(usize, BitVec)>,
+) -> Vec<((&usize, BitVec), (&usize, BitVec))> {
+    let mut recombs: Vec<((&usize, BitVec), (&usize, BitVec))> = Vec::new();
     for i in 0..kmers.len() {
         let (i_start, kmer_paths) = &kmers[i];
         let mut i_paths = BitVec::from_elem(kmer_paths.len(), true);
@@ -150,8 +151,9 @@ pub fn find_recomb_kmers(kmers: &Vec<(usize, BitVec)>) {
             common_paths.and(&i_paths);
 
             if !common_paths.any() {
-                println!("REC: {i_start} {j_start}")
+                recombs.push(((i_start, i_paths.clone()), (j_start, j_paths.clone())))
             }
         }
     }
+    recombs
 }
