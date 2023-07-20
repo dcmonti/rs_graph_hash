@@ -147,6 +147,7 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
             .map(|h| h.flip())
             .collect::<Vec<Handle>>();
     }
+    
     //create graph linearization
     let mut last_index = 1;
     let mut visited_node: HashMap<NodeId, i32> = HashMap::new();
@@ -181,7 +182,7 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
         paths[*id as usize] = path
     }
 
-    //let paths = &graph.paths;
+    
     let paths_number = paths_set.keys().len();
 
     let mut paths_nodes = vec![BitVec::from_elem(paths_number, false); linearization.len()];
@@ -271,4 +272,27 @@ pub fn read_sequence_w_path(file_path: &str) -> Vec<char> {
         sequence.insert(0, '$');
     }
     sequence //update with also sequences_name
+}
+
+pub fn output_formatter(recombs: &Vec<((&usize, BitVec), (&usize, BitVec))>, graph: &PathGraph) {
+    for ((i, i_paths), (j, j_paths)) in recombs {
+        let i_node = graph.nodes_id_pos[**i];
+        let i_offset = get_offset(**i, i_node, graph);
+
+        let j_node = graph.nodes_id_pos[**j];
+        let j_offset = get_offset(**j, j_node, graph);
+
+        println!("{i_node}[{i_offset}]\t{j_node}[{j_offset}]")
+
+    }
+}
+
+fn get_offset(i: usize, node: u64, graph: &PathGraph) -> u64{
+    let mut offset = 0;
+    let mut start = i;
+    while graph.nodes_id_pos[start - 1] == node {
+        start -= 1;
+        offset += 1;
+    }
+    offset
 }

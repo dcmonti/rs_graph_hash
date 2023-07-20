@@ -37,7 +37,5 @@ fn main() {
     let recombs = find_recomb_kmers(&candidates_kmers);
     println!("POSSIBLE RECOMBINATIONS:");
     println!("(position - paths)\t\t(position - paths)");
-    for ((i, i_paths), (j, j_paths)) in recombs {
-        println!("{i} {:?}\t{j} {:?}", i_paths, j_paths)
-    }
+    io_parser::output_formatter(&recombs, &graph);
 }
