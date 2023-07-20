@@ -186,7 +186,6 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
     let paths_number = paths_set.keys().len();
 
     let mut paths_nodes = vec![BitVec::from_elem(paths_number, false); linearization.len()];
-
     paths_nodes[0] = BitVec::from_elem(paths_number, true);
 
     for (path_id, path) in paths.iter().enumerate() {
@@ -278,11 +277,13 @@ pub fn output_formatter(recombs: &Vec<((&usize, BitVec), (&usize, BitVec))>, gra
     for ((i, i_paths), (j, j_paths)) in recombs {
         let i_node = graph.nodes_id_pos[**i];
         let i_offset = get_offset(**i, i_node, graph);
+        let i_paths_id = get_paths(i_paths);
 
         let j_node = graph.nodes_id_pos[**j];
         let j_offset = get_offset(**j, j_node, graph);
+        let j_paths_id = get_paths(j_paths);
 
-        println!("{i_node}[{i_offset}]\t{j_node}[{j_offset}]")
+        println!("{i_node}[{i_offset}]\t{i_paths_id}\t\t{j_node}[{j_offset}]\t{j_paths_id}")
 
     }
 }
@@ -295,4 +296,15 @@ fn get_offset(i: usize, node: u64, graph: &PathGraph) -> u64{
         offset += 1;
     }
     offset
+}
+
+fn get_paths(v: &BitVec) -> String{
+    let mut paths_vec = Vec::new();
+    for (path, is_present) in v.iter().enumerate() {
+        if is_present {
+            paths_vec.push((path+1).to_string())
+        }
+    }
+    let paths = paths_vec.join(",");
+    paths
 }
