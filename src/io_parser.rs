@@ -246,8 +246,6 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
     )
 }
 
-
-
 /// Returns a vector of (read, read_name) from a .fasta file, ready for the alignment
 pub fn read_sequence_w_path(file_path: &str) -> Vec<char> {
     let file = File::open(file_path).unwrap();
@@ -267,7 +265,7 @@ pub fn read_sequence_w_path(file_path: &str) -> Vec<char> {
                 })
                 .collect::<Vec<char>>();
             sequence.append(&mut line);
-        } 
+        }
     }
     if !sequence.is_empty() {
         sequence.insert(0, '$');
