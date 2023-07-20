@@ -6,6 +6,8 @@ use handlegraph::{
     hashgraph::HashGraph,
 };
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{prelude::*, BufReader};
 
 pub struct PathGraph {
     pub lnz: Vec<char>,
@@ -242,4 +244,33 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
         paths_number,
         nodes_id_pos,
     )
+}
+
+
+
+/// Returns a vector of (read, read_name) from a .fasta file, ready for the alignment
+pub fn read_sequence_w_path(file_path: &str) -> Vec<char> {
+    let file = File::open(file_path).unwrap();
+    let reader = BufReader::new(file);
+
+    let mut sequence: Vec<char> = Vec::new();
+    for line in reader.lines().flatten() {
+        if !line.starts_with('>') && !line.is_empty() {
+            let mut line: Vec<char> = line
+                .chars()
+                .map(|c| {
+                    if c == '-' {
+                        'N'
+                    } else {
+                        c.to_ascii_uppercase()
+                    }
+                })
+                .collect::<Vec<char>>();
+            sequence.append(&mut line);
+        } 
+    }
+    if !sequence.is_empty() {
+        sequence.insert(0, '$');
+    }
+    sequence //update with also sequences_name
 }

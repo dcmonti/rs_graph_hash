@@ -5,9 +5,9 @@ use std::{
 
 use bit_vec::BitVec;
 
-use crate::graph_parser::PathGraph;
+use crate::io_parser::PathGraph;
 
-pub fn extract_unique_kmers(graph: &PathGraph, k: usize) {
+pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<Vec<char>, (usize, BitVec)>{
     let mut unique_kmers = HashMap::new();
     let mut found_kmers = HashMap::new();
 
@@ -51,9 +51,7 @@ pub fn extract_unique_kmers(graph: &PathGraph, k: usize) {
             }
         }
     }
-    for (k, v) in unique_kmers.iter() {
-        println!("{:?}\t{:?}", k, v);
-    }
+    unique_kmers
 }
 
 fn recursive_extraction(
@@ -113,5 +111,42 @@ fn recursive_extraction(
         }
 
         //println!("K-MER: {:?}\tPATHS: {:?}", loc_kmer.clone(), loc_paths);
+    }
+}
+
+pub fn filter_read_kmers(read: &Vec<char>, unique_kmers: &HashMap<Vec<char>, (usize, BitVec)>, k: usize) -> Vec<(usize, BitVec)> {
+    let mut candidate_kmers = Vec::new();
+    for i in 1..read.len() - k + 1{
+        let mut read_kmer = Vec::new();
+        for idx in 0..k {
+            read_kmer.push(read[i+idx]);
+        }
+        
+        if unique_kmers.contains_key(&read_kmer) {
+            candidate_kmers.push(unique_kmers.get(&read_kmer).unwrap().to_owned())
+        }
+    }
+    candidate_kmers
+}
+
+pub fn find_recomb_kmers(kmers: &Vec<(usize, BitVec)>) {
+    for i in 0..kmers.len() {
+        let (i_start, kmer_paths) = &kmers[i];
+        let mut i_paths = BitVec::from_elem(kmer_paths.len(), true);
+        i_paths.and(kmer_paths);
+
+        for j in i..kmers.len() {
+            let (j_start, j_paths) = &kmers[j];
+
+            let mut common_paths = BitVec::from_elem(j_paths.len(), true);
+            common_paths.and(j_paths);
+            common_paths.and(&i_paths);
+            
+            if !common_paths.any() {
+                println!("REC: {i_start} {j_start}")
+            }
+        }
+
+
     }
 }
