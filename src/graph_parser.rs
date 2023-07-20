@@ -24,7 +24,7 @@ impl PathGraph {
             nws: BitVec::new(),
             succ_hash: SuccHash::new(),
             paths_nodes: vec![],
-            
+
             paths_number: 0,
             nodes_id_pos: vec![],
         }
@@ -70,7 +70,6 @@ impl PathGraph {
         println!();
 
         println!("Number of paths: {}", self.paths_number);
-
     }
 }
 
@@ -182,11 +181,11 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
 
     //let paths = &graph.paths;
     let paths_number = paths_set.keys().len();
-    
+
     let mut paths_nodes = vec![BitVec::from_elem(paths_number, false); linearization.len()];
 
     paths_nodes[0] = BitVec::from_elem(paths_number, true);
-    
+
     for (path_id, path) in paths.iter().enumerate() {
         let path_nodes = if is_reversed {
             path.nodes.iter().rev().collect::<Vec<&Handle>>()
@@ -201,7 +200,6 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
 
             for idx in handle_start..=handle_end {
                 paths_nodes[idx].set(path_id as usize, true);
-               
             }
 
             if !nodes_with_succ[handle_end] {
