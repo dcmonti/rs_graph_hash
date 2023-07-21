@@ -1,7 +1,7 @@
 use rs_graph_hash::cli;
 use rs_graph_hash::io_parser;
 use rs_graph_hash::k_mers_extraction;
-use rs_graph_hash::k_mers_extraction::find_recomb_kmers;
+use rs_graph_hash::k_mers_match;
 
 fn main() {
     // Parse args
@@ -10,7 +10,7 @@ fn main() {
     let read_path = cli::get_sequence_path();
 
     let graph = io_parser::read_graph_w_path(&graph_path, false);
-    let read = io_parser::read_sequence_w_path(&read_path);
+    let reads = io_parser::read_sequence_w_path(&read_path);
 
     // Extract graph's unique k-mers
     let unique_kmers = k_mers_extraction::extract_graph_unique_kmers(&graph, k);
@@ -22,9 +22,13 @@ fn main() {
     }
      */
 
-    // Find matching read and graph k-mers
-    let candidates_kmers = k_mers_extraction::filter_read_kmers(&read, &unique_kmers, k);
-
+    // Find matching read and graph k-mers for each reads
+    for read in reads {
+        let recombs = k_mers_match::find_recomb_kmers(&read, &unique_kmers, k);
+        println!("POSSIBLE RECOMBINATIONS:");
+        println!("(position - paths)\t\t(position - paths)");
+        io_parser::output_formatter(&recombs, &graph);
+    }
     /*
     println!("");
     println!("CANDIDATES KMERS");
@@ -34,8 +38,4 @@ fn main() {
      */
 
     // Find possible recombinations
-    let recombs = find_recomb_kmers(&candidates_kmers);
-    println!("POSSIBLE RECOMBINATIONS:");
-    println!("(position - paths)\t\t(position - paths)");
-    io_parser::output_formatter(&recombs, &graph);
 }

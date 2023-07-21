@@ -7,10 +7,7 @@ use bit_vec::BitVec;
 
 use crate::io_parser::PathGraph;
 
-pub fn extract_graph_unique_kmers(
-    graph: &PathGraph,
-    k: usize,
-) -> HashMap<Vec<char>, (usize, BitVec)> {
+pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<String, (usize, BitVec)> {
     let mut unique_kmers = HashMap::new();
     let mut found_kmers = HashMap::new();
 
@@ -63,8 +60,8 @@ fn recursive_extraction(
     paths: &mut BitVec,
     k: usize,
     idx: usize,
-    found_kmers: &mut HashMap<Vec<char>, (usize, BitVec)>,
-    unique_kmers: &mut HashMap<Vec<char>, (usize, BitVec)>,
+    found_kmers: &mut HashMap<String, usize>,
+    unique_kmers: &mut HashMap<String, (usize, BitVec)>,
     kmer_start: usize,
 ) {
     let mut loc_kmer = kmer.clone();
@@ -105,55 +102,13 @@ fn recursive_extraction(
         }
     }
     if loc_kmer.len() == k && loc_paths.any() {
-        if found_kmers.contains_key(&loc_kmer) {
+        let graph_kmer: String = String::from_iter(loc_kmer);
+        if found_kmers.contains_key(&graph_kmer) {
             //TODO: determinare esattamente cosa sono i kmer unici
-            unique_kmers.remove(&loc_kmer);
+            unique_kmers.remove(&graph_kmer);
         } else {
-            found_kmers.insert(loc_kmer.clone(), (kmer_start, loc_paths.clone()));
-            unique_kmers.insert(loc_kmer.clone(), (kmer_start, loc_paths.clone()));
+            found_kmers.insert(graph_kmer.clone(), kmer_start);
+            unique_kmers.insert(graph_kmer.clone(), (kmer_start, loc_paths.clone()));
         }
     }
-}
-
-pub fn filter_read_kmers(
-    read: &Vec<char>,
-    unique_kmers: &HashMap<Vec<char>, (usize, BitVec)>,
-    k: usize,
-) -> Vec<(usize, BitVec)> {
-    let mut candidate_kmers = Vec::new();
-    for i in 1..read.len() - k + 1 {
-        let mut read_kmer = Vec::new();
-        for idx in 0..k {
-            read_kmer.push(read[i + idx]);
-        }
-
-        if unique_kmers.contains_key(&read_kmer) {
-            candidate_kmers.push(unique_kmers.get(&read_kmer).unwrap().to_owned())
-        }
-    }
-    candidate_kmers
-}
-
-pub fn find_recomb_kmers(
-    kmers: &Vec<(usize, BitVec)>,
-) -> Vec<((&usize, BitVec), (&usize, BitVec))> {
-    let mut recombs: Vec<((&usize, BitVec), (&usize, BitVec))> = Vec::new();
-    for i in 0..kmers.len() {
-        let (i_start, kmer_paths) = &kmers[i];
-        let mut i_paths = BitVec::from_elem(kmer_paths.len(), true);
-        i_paths.and(kmer_paths);
-
-        for j in i..kmers.len() {
-            let (j_start, j_paths) = &kmers[j];
-
-            let mut common_paths = BitVec::from_elem(j_paths.len(), true);
-            common_paths.and(j_paths);
-            common_paths.and(&i_paths);
-
-            if !common_paths.any() {
-                recombs.push(((i_start, i_paths.clone()), (j_start, j_paths.clone())))
-            }
-        }
-    }
-    recombs
 }

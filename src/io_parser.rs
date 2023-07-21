@@ -1,3 +1,4 @@
+use bio;
 use bit_vec::BitVec;
 use gfa::{gfa::*, parser::GFAParser};
 use handlegraph::{
@@ -7,7 +8,7 @@ use handlegraph::{
 };
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{prelude::*, BufReader};
+use std::io::BufReader;
 
 pub struct PathGraph {
     pub lnz: Vec<char>,
@@ -147,7 +148,7 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
             .map(|h| h.flip())
             .collect::<Vec<Handle>>();
     }
-    
+
     //create graph linearization
     let mut last_index = 1;
     let mut visited_node: HashMap<NodeId, i32> = HashMap::new();
@@ -182,7 +183,6 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
         paths[*id as usize] = path
     }
 
-    
     let paths_number = paths_set.keys().len();
 
     let mut paths_nodes = vec![BitVec::from_elem(paths_number, false); linearization.len()];
@@ -247,48 +247,36 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
 }
 
 /// Returns a vector of (read, read_name) from a .fasta file, ready for the alignment
-pub fn read_sequence_w_path(file_path: &str) -> Vec<char> {
+pub fn read_sequence_w_path(file_path: &str) -> Vec<String> {
     let file = File::open(file_path).unwrap();
-    let reader = BufReader::new(file);
+    let buffer = BufReader::new(file);
+    let reader = bio::io::fasta::Reader::new(buffer);
 
-    let mut sequence: Vec<char> = Vec::new();
-    for line in reader.lines().flatten() {
-        if !line.starts_with('>') && !line.is_empty() {
-            let mut line: Vec<char> = line
-                .chars()
-                .map(|c| {
-                    if c == '-' {
-                        'N'
-                    } else {
-                        c.to_ascii_uppercase()
-                    }
-                })
-                .collect::<Vec<char>>();
-            sequence.append(&mut line);
-        }
+    let mut sequences = Vec::new();
+    for result in reader.records() {
+        let record = result.expect("Error parsing FASTA file");
+        let b_read = record.seq().to_owned().to_ascii_uppercase();
+        let read: String = String::from_utf8(b_read).unwrap();
+        sequences.push(read)
     }
-    if !sequence.is_empty() {
-        sequence.insert(0, '$');
-    }
-    sequence //update with also sequences_name
+    sequences
 }
 
-pub fn output_formatter(recombs: &Vec<((&usize, BitVec), (&usize, BitVec))>, graph: &PathGraph) {
+pub fn output_formatter(recombs: &Vec<((usize, BitVec), (usize, BitVec))>, graph: &PathGraph) {
     for ((i, i_paths), (j, j_paths)) in recombs {
-        let i_node = graph.nodes_id_pos[**i];
-        let i_offset = get_offset(**i, i_node, graph);
+        let i_node = graph.nodes_id_pos[*i];
+        let i_offset = get_offset(*i, i_node, graph);
         let i_paths_id = get_paths(i_paths);
 
-        let j_node = graph.nodes_id_pos[**j];
-        let j_offset = get_offset(**j, j_node, graph);
+        let j_node = graph.nodes_id_pos[*j];
+        let j_offset = get_offset(*j, j_node, graph);
         let j_paths_id = get_paths(j_paths);
 
         println!("{i_node}[{i_offset}]\t{i_paths_id}\t\t{j_node}[{j_offset}]\t{j_paths_id}")
-
     }
 }
 
-fn get_offset(i: usize, node: u64, graph: &PathGraph) -> u64{
+fn get_offset(i: usize, node: u64, graph: &PathGraph) -> u64 {
     let mut offset = 0;
     let mut start = i;
     while graph.nodes_id_pos[start - 1] == node {
@@ -298,11 +286,11 @@ fn get_offset(i: usize, node: u64, graph: &PathGraph) -> u64{
     offset
 }
 
-fn get_paths(v: &BitVec) -> String{
+fn get_paths(v: &BitVec) -> String {
     let mut paths_vec = Vec::new();
     for (path, is_present) in v.iter().enumerate() {
         if is_present {
-            paths_vec.push((path+1).to_string())
+            paths_vec.push((path + 1).to_string())
         }
     }
     let paths = paths_vec.join(",");
