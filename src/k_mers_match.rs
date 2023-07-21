@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use bit_vec::BitVec;
 
@@ -26,6 +26,7 @@ pub fn find_recomb_kmers(
             }
         }
     }
+
     recombs
 }
 
@@ -35,10 +36,15 @@ fn filter_read_kmers(
     k: usize,
 ) -> Vec<(usize, BitVec)> {
     let mut candidate_kmers = Vec::new();
+    let mut found_kmers = HashSet::new();
+
     for i in 0..read.len() - k + 1 {
         let read_kmer: String = read.chars().skip(i).take(k).collect();
         if unique_kmers.contains_key(&read_kmer) {
-            candidate_kmers.push(unique_kmers.get(&read_kmer).unwrap().to_owned());
+            if !found_kmers.contains(&read_kmer) {
+                candidate_kmers.push(unique_kmers.get(&read_kmer).unwrap().to_owned());
+                found_kmers.insert(read_kmer);
+            }
         }
     }
     candidate_kmers

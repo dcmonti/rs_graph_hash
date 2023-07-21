@@ -284,6 +284,7 @@ pub fn output_formatter(
 
         println!("{i_node}[{i_offset}]\t{i_paths_id}\t\t{j_node}[{j_offset}]\t{j_paths_id}")
     }
+    println!("")
 }
 
 fn get_offset(i: usize, node: u64, graph: &PathGraph) -> u64 {
