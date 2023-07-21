@@ -15,7 +15,6 @@ pub struct PathGraph {
     pub nws: BitVec,
     pub succ_hash: SuccHash,
     pub paths_nodes: Vec<BitVec>,
-
     pub paths_number: usize,
     pub nodes_id_pos: Vec<u64>,
 }
@@ -129,25 +128,17 @@ impl SuccHash {
     }
 }
 
-pub fn read_graph_w_path(file_path: &str, is_reversed: bool) -> PathGraph {
+pub fn read_graph_w_path(file_path: &str) -> PathGraph {
     let parser = GFAParser::new();
     let gfa: GFA<usize, ()> = parser.parse_file(file_path).unwrap();
 
     let graph: HashGraph = HashGraph::from_gfa(&gfa);
-    create_path_graph(&graph, is_reversed)
+    create_path_graph(&graph)
 }
 
-pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
+pub fn create_path_graph(graph: &HashGraph) -> PathGraph {
     let mut sorted_handles = graph.handles_iter().collect::<Vec<Handle>>();
     sorted_handles.sort();
-
-    if is_reversed {
-        sorted_handles.reverse();
-        sorted_handles = sorted_handles
-            .iter()
-            .map(|h| h.flip())
-            .collect::<Vec<Handle>>();
-    }
 
     //create graph linearization
     let mut last_index = 1;
@@ -189,11 +180,7 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
     paths_nodes[0] = BitVec::from_elem(paths_number, true);
 
     for (path_id, path) in paths.iter().enumerate() {
-        let path_nodes = if is_reversed {
-            path.nodes.iter().rev().collect::<Vec<&Handle>>()
-        } else {
-            path.nodes.iter().collect::<Vec<&Handle>>()
-        };
+        let path_nodes = path.nodes.iter().collect::<Vec<&Handle>>();
 
         for (pos, handle) in path_nodes.iter().enumerate() {
             let (handle_start, handle_end) = handles_id_position.get(&handle.id()).unwrap();
@@ -247,7 +234,7 @@ pub fn create_path_graph(graph: &HashGraph, is_reversed: bool) -> PathGraph {
 }
 
 /// Returns a vector of (read, read_name) from a .fasta file, ready for the alignment
-pub fn read_sequence_w_path(file_path: &str) -> Vec<String> {
+pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, String)> {
     let file = File::open(file_path).unwrap();
     let buffer = BufReader::new(file);
     let reader = bio::io::fasta::Reader::new(buffer);
@@ -255,14 +242,37 @@ pub fn read_sequence_w_path(file_path: &str) -> Vec<String> {
     let mut sequences = Vec::new();
     for result in reader.records() {
         let record = result.expect("Error parsing FASTA file");
-        let b_read = record.seq().to_owned().to_ascii_uppercase();
-        let read: String = String::from_utf8(b_read).unwrap();
-        sequences.push(read)
+        let mut b_read = record.seq().to_owned().to_ascii_uppercase();
+
+        let read_id = record.id().to_owned();
+
+        let read: String = String::from_utf8(b_read.clone()).unwrap();
+
+        let mut pos_read_id = read_id.clone();
+        pos_read_id.push_str(" +");
+        sequences.push((pos_read_id, read));
+        if amb_mode {
+            b_read.reverse();
+            let mut rev_and_compl = Vec::new();
+            for c in b_read.iter() {
+                rev_and_compl.push(bio::alphabets::dna::complement(*c));
+            }
+            let mut rev_read_id = read_id.clone();
+            rev_read_id.push_str(" -");
+            sequences.push((rev_read_id, String::from_utf8(rev_and_compl).unwrap()))
+        }
     }
     sequences
 }
 
-pub fn output_formatter(recombs: &Vec<((usize, BitVec), (usize, BitVec))>, graph: &PathGraph) {
+pub fn output_formatter(
+    recombs: &Vec<((usize, BitVec), (usize, BitVec))>,
+    graph: &PathGraph,
+    id: &String,
+) {
+    println!("{id}");
+    println!("POSSIBLE RECOMBINATIONS:");
+    println!("(position - paths)\t\t(position - paths)");
     for ((i, i_paths), (j, j_paths)) in recombs {
         let i_node = graph.nodes_id_pos[*i];
         let i_offset = get_offset(*i, i_node, graph);

@@ -25,6 +25,16 @@ struct Args {
         help = "Set k-mer length"
     )]
     kmer_length: i32,
+
+    //Ambiguos strand mode
+    #[clap(
+        help_heading = "Parameters",
+        short = 's',
+        long = "amb-strand",
+        default_value_t = 0,
+        help = "Set ambigous strand mode:\nIf 0 use input sequence\nIf 1 try also align with rev & compl"
+    )]
+    amb_strand: i32,
 }
 
 pub fn get_kmer_length() -> i32 {
@@ -40,4 +50,14 @@ pub fn get_sequence_path() -> String {
 pub fn get_graph_path() -> String {
     let args = Args::parse();
     args.graph_path
+}
+
+pub fn get_amb_mode() -> bool {
+    let args = Args::parse();
+    let strand_mode = args.amb_strand;
+    if strand_mode == 0 {
+        false
+    } else {
+        true
+    }
 }
