@@ -35,6 +35,15 @@ struct Args {
         help = "Set ambigous strand mode:\nIf 0 use input sequence\nIf 1 try also align with rev & compl"
     )]
     amb_strand: i32,
+
+    #[clap(
+        help_heading = "I/O",
+        short = 'o',
+        long = "out_file",
+        default_value = "standard output",
+        help = "Output reombinations file"
+    )]
+    out_file: String,
 }
 
 pub fn get_kmer_length() -> i32 {
@@ -60,4 +69,9 @@ pub fn get_amb_mode() -> bool {
     } else {
         true
     }
+}
+
+pub fn get_out_file() -> String {
+    let args = Args::parse();
+    args.out_file
 }

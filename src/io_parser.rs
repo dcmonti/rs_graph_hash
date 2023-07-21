@@ -6,9 +6,14 @@ use handlegraph::{
     handlegraph::HandleGraph,
     hashgraph::HashGraph,
 };
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::BufReader;
+use std::{
+    collections::HashMap,
+    fs::{File, OpenOptions},
+    io::{BufReader, BufWriter, Write},
+    path::Path,
+};
+
+use crate::cli;
 
 pub struct PathGraph {
     pub lnz: Vec<char>,
@@ -166,6 +171,7 @@ pub fn create_path_graph(graph: &HashGraph) -> PathGraph {
     let mut succ_hash_struct = SuccHash::new();
 
     let paths_set = &graph.paths;
+
     let mut paths = Vec::new();
     for (_id, path) in paths_set.iter() {
         paths.push(path)
@@ -181,7 +187,6 @@ pub fn create_path_graph(graph: &HashGraph) -> PathGraph {
 
     for (path_id, path) in paths.iter().enumerate() {
         let path_nodes = path.nodes.iter().collect::<Vec<&Handle>>();
-
         for (pos, handle) in path_nodes.iter().enumerate() {
             let (handle_start, handle_end) = handles_id_position.get(&handle.id()).unwrap();
             let handle_start = *handle_start as usize;
@@ -249,7 +254,7 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
         let read: String = String::from_utf8(b_read.clone()).unwrap();
 
         let mut pos_read_id = read_id.clone();
-        pos_read_id.push_str(" +");
+        pos_read_id.push_str("+");
         sequences.push((pos_read_id, read));
         if amb_mode {
             b_read.reverse();
@@ -258,7 +263,7 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
                 rev_and_compl.push(bio::alphabets::dna::complement(*c));
             }
             let mut rev_read_id = read_id.clone();
-            rev_read_id.push_str(" -");
+            rev_read_id.push_str("-");
             sequences.push((rev_read_id, String::from_utf8(rev_and_compl).unwrap()))
         }
     }
@@ -270,9 +275,9 @@ pub fn output_formatter(
     graph: &PathGraph,
     id: &String,
 ) {
-    println!("{id}");
-    println!("POSSIBLE RECOMBINATIONS:");
-    println!("(position - paths)\t\t(position - paths)");
+    let mut outputs = String::new();
+    let out_path: String = cli::get_out_file();
+
     for ((i, i_paths), (j, j_paths)) in recombs {
         let i_node = graph.nodes_id_pos[*i];
         let i_offset = get_offset(*i, i_node, graph);
@@ -281,10 +286,39 @@ pub fn output_formatter(
         let j_node = graph.nodes_id_pos[*j];
         let j_offset = get_offset(*j, j_node, graph);
         let j_paths_id = get_paths(j_paths);
-
-        println!("{i_node}[{i_offset}]\t{i_paths_id}\t\t{j_node}[{j_offset}]\t{j_paths_id}")
+        let output =
+            format!("{id}\t{i_node}[{i_offset}]\t{i_paths_id}\t{j_node}[{j_offset}]\t{j_paths_id}");
+        outputs = format!("{}\n{}", outputs, output)
     }
-    println!("")
+    outputs = outputs.trim().to_string();
+
+    if outputs == "" {
+        outputs = format!("{id}\tno rec")
+    }
+    if out_path == "standard output" {
+        println!("{outputs}");
+    } else {
+        write_output(&outputs)
+    }
+}
+
+pub fn write_output(recombs: &str) {
+    let mut out_file = cli::get_out_file();
+    out_file.push_str(".rec");
+
+    let file_name = Path::new(&out_file);
+    let file = if file_name.exists() {
+        OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(file_name)
+            .unwrap()
+    } else {
+        File::create(file_name).expect("unable to create file")
+    };
+
+    let mut f = BufWriter::new(&file);
+    writeln!(f, "{}", recombs.trim()).expect("error in writing");
 }
 
 fn get_offset(i: usize, node: u64, graph: &PathGraph) -> u64 {
