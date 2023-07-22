@@ -48,6 +48,9 @@ pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<String
             }
         }
     }
+    for kmer in unique_kmers.iter() {
+        println!("{:?}", kmer)
+    }
     unique_kmers
 }
 
@@ -104,7 +107,7 @@ fn recursive_extraction(
             unique_kmers.remove(&loc_kmer);
         } else {
             found_kmers.insert(loc_kmer.clone(), kmer_start);
-            unique_kmers.insert(loc_kmer, (kmer_start, loc_paths.clone()));
+            unique_kmers.insert(loc_kmer, (kmer_start, loc_paths));
         }
     }
 }
