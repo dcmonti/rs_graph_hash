@@ -16,6 +16,7 @@ use std::{
 use crate::{
     cli,
     path_graph::{PathGraph, SuccHash},
+    rec_struct::RecStruct,
 };
 
 pub fn read_graph_w_path(file_path: &str) -> PathGraph {
@@ -155,21 +156,22 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
     sequences
 }
 
-pub fn output_formatter(
-    recombs: &Vec<((usize, BitVec), (usize, BitVec))>,
-    graph: &PathGraph,
-    id: &String,
-) {
+pub fn output_formatter(recombs: &Vec<RecStruct>, graph: &PathGraph, id: &String) {
     let mut outputs = String::new();
     let out_path: String = cli::get_out_file();
 
-    for ((i, i_paths), (j, j_paths)) in recombs {
-        let i_node = graph.nodes_id_pos[*i];
-        let i_offset = get_offset(*i, i_node, graph);
+    for rec in recombs {
+        let i = rec.first_start;
+        let i_paths = &rec.first_paths;
+        let j = rec.second_start;
+        let j_paths = &rec.second_paths;
+
+        let i_node = graph.nodes_id_pos[i];
+        let i_offset = get_offset(i, i_node, graph);
         let i_paths_id = get_paths(i_paths);
 
-        let j_node = graph.nodes_id_pos[*j];
-        let j_offset = get_offset(*j, j_node, graph);
+        let j_node = graph.nodes_id_pos[j];
+        let j_offset = get_offset(j, j_node, graph);
         let j_paths_id = get_paths(j_paths);
         let output =
             format!("{id}\t{i_node}[{i_offset}]\t{i_paths_id}\t{j_node}[{j_offset}]\t{j_paths_id}");

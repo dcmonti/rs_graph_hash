@@ -2,13 +2,15 @@ use std::collections::{HashMap, HashSet};
 
 use bit_vec::BitVec;
 
+use crate::rec_struct::RecStruct;
+
 pub fn find_recomb_kmers(
     read: &String,
     unique_kmers: &HashMap<String, (usize, BitVec)>,
     k: usize,
-) -> Vec<((usize, BitVec), (usize, BitVec))> {
+) -> Vec<RecStruct> {
     let kmers = filter_read_kmers(read, unique_kmers, k);
-    let mut recombs: Vec<((usize, BitVec), (usize, BitVec))> = Vec::new();
+    let mut recombs: Vec<RecStruct> = Vec::new();
     for (i, (i_start, kmer_paths)) in kmers.iter().enumerate() {
         let mut i_paths = BitVec::from_elem(kmer_paths.len(), true);
         i_paths.and(kmer_paths);
@@ -19,7 +21,13 @@ pub fn find_recomb_kmers(
             common_paths.and(&i_paths);
 
             if !common_paths.any() {
-                recombs.push(((*i_start, i_paths.clone()), (*j_start, j_paths.clone())))
+                let rec = RecStruct::build_rec_struct(
+                    *i_start,
+                    i_paths.clone(),
+                    *j_start,
+                    j_paths.clone(),
+                );
+                recombs.push(rec)
             }
         }
     }
