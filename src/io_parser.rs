@@ -13,125 +13,10 @@ use std::{
     path::Path,
 };
 
-use crate::cli;
-
-pub struct PathGraph {
-    pub lnz: Vec<char>,
-    pub nws: BitVec,
-    pub succ_hash: SuccHash,
-    pub paths_nodes: Vec<BitVec>,
-    pub paths_number: usize,
-    pub nodes_id_pos: Vec<u64>,
-}
-
-impl PathGraph {
-    pub fn new() -> PathGraph {
-        PathGraph {
-            lnz: vec![],
-            nws: BitVec::new(),
-            succ_hash: SuccHash::new(),
-            paths_nodes: vec![],
-
-            paths_number: 0,
-            nodes_id_pos: vec![],
-        }
-    }
-
-    pub fn build(
-        lnz: Vec<char>,
-        nws: BitVec,
-        succ_hash: SuccHash,
-        paths_nodes: Vec<BitVec>,
-        paths_number: usize,
-        nodes_id_pos: Vec<u64>,
-    ) -> PathGraph {
-        PathGraph {
-            lnz,
-            nws,
-            succ_hash,
-            paths_nodes,
-            paths_number,
-            nodes_id_pos,
-        }
-    }
-
-    pub fn to_string(self) {
-        println!("Linearization:");
-        println!("{:?}", self.lnz);
-        println!();
-
-        println!("Nodes with succs:");
-        println!("{:?}", self.nws);
-        println!();
-
-        println!("succs hash:");
-        println!("{:?}", self.succ_hash);
-        println!();
-
-        println!("Paths of nodes:");
-        println!("{:?}", self.paths_nodes);
-        println!();
-
-        println!("nodes_id pos:");
-        println!("{:?}", self.nodes_id_pos);
-        println!();
-
-        println!("Number of paths: {}", self.paths_number);
-    }
-}
-
-#[derive(Debug)]
-pub struct SuccHash {
-    successor: HashMap<usize, HashMap<usize, BitVec>>,
-}
-
-impl SuccHash {
-    pub fn new() -> SuccHash {
-        SuccHash {
-            successor: HashMap::new(),
-        }
-    }
-
-    pub fn get_succs_and_paths(&self, curr_node: usize) -> Vec<(usize, BitVec)> {
-        let succs = self.successor.get(&curr_node).unwrap();
-        let mut succs_paths = Vec::new();
-        for (succ_pos, succ_paths) in succs.iter() {
-            succs_paths.push((*succ_pos, succ_paths.clone()));
-        }
-        succs_paths
-    }
-
-    pub fn set_succs_and_paths(
-        &mut self,
-        curr_node: usize,
-        succ_pos: usize,
-        path_id: usize,
-        paths_number: usize,
-    ) {
-        if self.successor.get(&curr_node).is_none() {
-            self.successor.insert(curr_node, HashMap::new());
-        }
-
-        if self
-            .successor
-            .get(&curr_node)
-            .unwrap()
-            .get(&succ_pos)
-            .is_none()
-        {
-            self.successor
-                .get_mut(&curr_node)
-                .unwrap()
-                .insert(succ_pos, BitVec::from_elem(paths_number, false));
-        }
-        self.successor
-            .get_mut(&curr_node)
-            .unwrap()
-            .get_mut(&succ_pos)
-            .unwrap()
-            .set(path_id, true);
-    }
-}
+use crate::{
+    cli,
+    path_graph::{PathGraph, SuccHash},
+};
 
 pub fn read_graph_w_path(file_path: &str) -> PathGraph {
     let parser = GFAParser::new();
@@ -193,7 +78,7 @@ pub fn create_path_graph(graph: &HashGraph) -> PathGraph {
             let handle_end = *handle_end as usize;
 
             for idx in handle_start..=handle_end {
-                paths_nodes[idx].set(path_id as usize, true);
+                paths_nodes[idx].set(path_id, true);
             }
 
             if !nodes_with_succ[handle_end] {
@@ -254,7 +139,7 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
         let read: String = String::from_utf8(b_read.clone()).unwrap();
 
         let mut pos_read_id = read_id.clone();
-        pos_read_id.push_str("+");
+        pos_read_id.push('+');
         sequences.push((pos_read_id, read));
         if amb_mode {
             b_read.reverse();
@@ -263,7 +148,7 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
                 rev_and_compl.push(bio::alphabets::dna::complement(*c));
             }
             let mut rev_read_id = read_id.clone();
-            rev_read_id.push_str("-");
+            rev_read_id.push('-');
             sequences.push((rev_read_id, String::from_utf8(rev_and_compl).unwrap()))
         }
     }
@@ -292,7 +177,7 @@ pub fn output_formatter(
     }
     outputs = outputs.trim().to_string();
 
-    if outputs == "" {
+    if outputs.is_empty() {
         outputs = format!("{id}\tno rec")
     }
     if out_path == "standard output" {
@@ -338,6 +223,5 @@ fn get_paths(v: &BitVec) -> String {
             paths_vec.push((path + 1).to_string())
         }
     }
-    let paths = paths_vec.join(",");
-    paths
+    paths_vec.join(",")
 }

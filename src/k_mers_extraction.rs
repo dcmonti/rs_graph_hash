@@ -1,11 +1,8 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    vec,
-};
+use std::collections::{HashMap, VecDeque};
 
 use bit_vec::BitVec;
 
-use crate::io_parser::PathGraph;
+use crate::path_graph::PathGraph;
 
 pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<String, (usize, BitVec)> {
     let mut unique_kmers = HashMap::new();
@@ -26,11 +23,11 @@ pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<String
     while !positions.is_empty() {
         let window_pos = positions.pop_front().unwrap();
         if !visited_nodes[graph.nodes_id_pos[window_pos] as usize] {
-            let mut kmer = vec![];
+            let kmer = String::new();
             let mut paths = BitVec::from_elem(graph.paths_number, true);
             recursive_extraction(
                 graph,
-                &mut kmer,
+                &kmer,
                 &mut paths,
                 k,
                 window_pos,
@@ -56,7 +53,7 @@ pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<String
 
 fn recursive_extraction(
     graph: &PathGraph,
-    kmer: &Vec<char>,
+    kmer: &str,
     paths: &mut BitVec,
     k: usize,
     idx: usize,
@@ -64,7 +61,7 @@ fn recursive_extraction(
     unique_kmers: &mut HashMap<String, (usize, BitVec)>,
     kmer_start: usize,
 ) {
-    let mut loc_kmer = kmer.clone();
+    let mut loc_kmer = kmer.to_owned();
     let mut loc_paths = paths.clone();
 
     loc_kmer.push(graph.lnz[idx]);
@@ -74,7 +71,7 @@ fn recursive_extraction(
         if !graph.nws[idx] {
             recursive_extraction(
                 graph,
-                &mut loc_kmer,
+                &loc_kmer,
                 &mut loc_paths,
                 k,
                 idx + 1,
@@ -87,7 +84,7 @@ fn recursive_extraction(
                 if graph.lnz[succ_idx] != 'F' {
                     recursive_extraction(
                         graph,
-                        &mut loc_kmer,
+                        &loc_kmer,
                         &mut loc_paths,
                         k,
                         succ_idx,
@@ -102,13 +99,12 @@ fn recursive_extraction(
         }
     }
     if loc_kmer.len() == k && loc_paths.any() {
-        let graph_kmer: String = String::from_iter(loc_kmer);
-        if found_kmers.contains_key(&graph_kmer) {
+        if found_kmers.contains_key(&loc_kmer) {
             //TODO: determinare esattamente cosa sono i kmer unici
-            unique_kmers.remove(&graph_kmer);
+            unique_kmers.remove(&loc_kmer);
         } else {
-            found_kmers.insert(graph_kmer.clone(), kmer_start);
-            unique_kmers.insert(graph_kmer.clone(), (kmer_start, loc_paths.clone()));
+            found_kmers.insert(loc_kmer.clone(), kmer_start);
+            unique_kmers.insert(loc_kmer, (kmer_start, loc_paths.clone()));
         }
     }
 }

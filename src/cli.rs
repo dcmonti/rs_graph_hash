@@ -64,11 +64,7 @@ pub fn get_graph_path() -> String {
 pub fn get_amb_mode() -> bool {
     let args = Args::parse();
     let strand_mode = args.amb_strand;
-    if strand_mode == 0 {
-        false
-    } else {
-        true
-    }
+    strand_mode != 0
 }
 
 pub fn get_out_file() -> String {
