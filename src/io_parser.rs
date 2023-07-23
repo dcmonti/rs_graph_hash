@@ -162,19 +162,37 @@ pub fn output_formatter(recombs: &Vec<RecStruct>, graph: &PathGraph, id: &String
 
     for rec in recombs {
         let i = rec.first_start;
+        let ie = rec.first_end;
         let i_paths = &rec.first_paths;
         let j = rec.second_start;
+        let je = rec.second_end;
         let j_paths = &rec.second_paths;
 
-        let i_node = graph.nodes_id_pos[i];
-        let i_offset = get_offset(i, i_node, graph);
+        let i_node_start = graph.nodes_id_pos[i];
+        let i_node_end = graph.nodes_id_pos[ie];
+        let i_offset_start = get_offset(i, i_node_start, graph);
+        let i_offset_end = get_offset(ie, i_node_end, graph);
         let i_paths_id = get_paths(i_paths);
 
-        let j_node = graph.nodes_id_pos[j];
-        let j_offset = get_offset(j, j_node, graph);
+        let j_node_start = graph.nodes_id_pos[j];
+        let j_node_end = graph.nodes_id_pos[je];
+        let j_offset_start = get_offset(j, j_node_start, graph);
+        let j_offset_end = get_offset(je, j_node_end, graph);
         let j_paths_id = get_paths(j_paths);
-        let output =
-            format!("{id}\t{i_node}[{i_offset}]\t{i_paths_id}\t{j_node}[{j_offset}]\t{j_paths_id}");
+        let output = format!(
+            "{}\t{}[{}]\t{}[{}]\t{}\t{}[{}]\t{}[{}]\t{}",
+            id,
+            i_node_start,
+            i_offset_start,
+            i_node_end,
+            i_offset_end,
+            i_paths_id,
+            j_node_start,
+            j_offset_start,
+            j_node_end,
+            j_offset_end,
+            j_paths_id
+        );
         outputs = format!("{}\n{}", outputs, output)
     }
     outputs = outputs.trim().to_string();

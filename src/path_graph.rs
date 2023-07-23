@@ -94,6 +94,15 @@ impl SuccHash {
         succs_paths
     }
 
+    pub fn get_succs(&self, curr_node: usize) -> Vec<usize> {
+        let succs = self.successor.get(&curr_node).unwrap();
+        let mut succs_paths = Vec::new();
+        for (succ_pos, _) in succs.iter() {
+            succs_paths.push(*succ_pos);
+        }
+        succs_paths
+    }
+
     pub fn set_succs_and_paths(
         &mut self,
         curr_node: usize,

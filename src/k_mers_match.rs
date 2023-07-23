@@ -2,32 +2,54 @@ use std::collections::{HashMap, HashSet};
 
 use bit_vec::BitVec;
 
-use crate::rec_struct::RecStruct;
+use crate::{path_graph::PathGraph, rec_struct::RecStruct};
 
 pub fn find_recomb_kmers(
     read: &String,
-    unique_kmers: &HashMap<String, (usize, BitVec)>,
+    unique_kmers: &HashMap<String, ((usize, usize), BitVec)>,
     k: usize,
+    rec_mode: i32,
+    graph: &PathGraph,
 ) -> Vec<RecStruct> {
     let kmers = filter_read_kmers(read, unique_kmers, k);
     let mut recombs: Vec<RecStruct> = Vec::new();
-    for (i, (i_start, kmer_paths)) in kmers.iter().enumerate() {
+    for (i, ((i_start, i_end), kmer_paths)) in kmers.iter().enumerate() {
         let mut i_paths = BitVec::from_elem(kmer_paths.len(), true);
         i_paths.and(kmer_paths);
 
-        for (j_start, j_paths) in kmers.iter().skip(i) {
+        for ((j_start, j_end), j_paths) in kmers.iter().skip(i) {
             let mut common_paths = BitVec::from_elem(j_paths.len(), true);
-            common_paths.and(j_paths);
-            common_paths.and(&i_paths);
+            if rec_mode == 0 {
+                common_paths.and(j_paths);
+                common_paths.and(&i_paths);
+            } else if rec_mode == 1 {
+                // consider only consecutive positions
+                // TODO: some fixing needed
+                if graph.nws[*i_end] {
+                    let succs = graph.succ_hash.get_succs(*i_end);
+                    if succs.contains(j_start) {
+                        common_paths.and(j_paths);
+                        common_paths.and(&i_paths);
+                    }
+                } else {
+                    if *j_start == i_end + 1 {
+                        common_paths.and(j_paths);
+                        common_paths.and(&i_paths);
+                    }
+                }
+            }
 
             if !common_paths.any() {
                 let rec = RecStruct::build_rec_struct(
                     *i_start,
+                    *i_end,
                     i_paths.clone(),
                     *j_start,
+                    *j_end,
                     j_paths.clone(),
                 );
-                recombs.push(rec)
+                recombs.push(rec);
+                //break;
             }
         }
     }
@@ -37,9 +59,9 @@ pub fn find_recomb_kmers(
 
 fn filter_read_kmers(
     read: &String,
-    unique_kmers: &HashMap<String, (usize, BitVec)>,
+    unique_kmers: &HashMap<String, ((usize, usize), BitVec)>,
     k: usize,
-) -> Vec<(usize, BitVec)> {
+) -> Vec<((usize, usize), BitVec)> {
     let mut candidate_kmers = Vec::new();
     let mut found_kmers = HashSet::new();
 

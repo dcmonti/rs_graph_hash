@@ -9,6 +9,7 @@ fn main() {
     let graph_path = cli::get_graph_path();
     let read_path = cli::get_sequence_path();
     let amb_mode = cli::get_amb_mode();
+    let rec_mode = cli::get_rec_mode();
 
     let graph = io_parser::read_graph_w_path(&graph_path);
     let reads = io_parser::read_sequence_w_path(&read_path, amb_mode);
@@ -18,7 +19,7 @@ fn main() {
 
     // Find possible recombinations
     for (id, read) in reads {
-        let recombs = k_mers_match::find_recomb_kmers(&read, &unique_kmers, k);
+        let recombs = k_mers_match::find_recomb_kmers(&read, &unique_kmers, k, rec_mode, &graph);
         io_parser::output_formatter(&recombs, &graph, &id);
     }
 }

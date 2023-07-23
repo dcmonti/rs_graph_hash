@@ -1,7 +1,12 @@
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[clap(author = "Davide Monti <d.monti11@campus.unimib.it>", version, about = "RecGraph", long_about = None)]
+#[clap(
+    author = "Davide Monti <d.monti11@campus.unimib.it>\nNada Mohamed <n.mohamed3@campus.unimib.it>",
+    version,
+    about = "rs_graph_hash",
+    long_about = "Alignment free sequence to graph"
+)]
 struct Args {
     #[clap(
         help_heading = "I/O",
@@ -16,7 +21,6 @@ struct Args {
     )]
     graph_path: String,
 
-    // Alignment mode
     #[clap(
         help_heading = "Parameters",
         short = 'k',
@@ -26,13 +30,22 @@ struct Args {
     )]
     kmer_length: i32,
 
+    #[clap(
+        help_heading = "Parameters",
+        short = 'r',
+        long = "rec-mode",
+        default_value_t = 0,
+        help = "Set recombination selection mode:\n\tIf 0 consider every k-mers\n\tIf 1 consider only consecutive ones"
+    )]
+    rec_mode: i32,
+
     //Ambiguos strand mode
     #[clap(
         help_heading = "Parameters",
         short = 's',
         long = "amb-strand",
         default_value_t = 0,
-        help = "Set ambigous strand mode:\nIf 0 use input sequence\nIf 1 try also align with rev & compl"
+        help = "Set ambigous strand mode:\n\tIf 0 use input sequence\n\tIf 1 try also align with rev & compl"
     )]
     amb_strand: i32,
 
@@ -70,4 +83,9 @@ pub fn get_amb_mode() -> bool {
 pub fn get_out_file() -> String {
     let args = Args::parse();
     args.out_file
+}
+
+pub fn get_rec_mode() -> i32 {
+    let args = Args::parse();
+    args.rec_mode
 }

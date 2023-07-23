@@ -4,7 +4,11 @@ use bit_vec::BitVec;
 
 use crate::path_graph::PathGraph;
 
-pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<String, (usize, BitVec)> {
+// unique k-mers in graph: (k-mer, (k-mer start, k-mer end), paths)
+pub fn extract_graph_unique_kmers(
+    graph: &PathGraph,
+    k: usize,
+) -> HashMap<String, ((usize, usize), BitVec)> {
     let mut unique_kmers = HashMap::new();
     let mut found_kmers = HashMap::new();
 
@@ -48,9 +52,6 @@ pub fn extract_graph_unique_kmers(graph: &PathGraph, k: usize) -> HashMap<String
             }
         }
     }
-    for kmer in unique_kmers.iter() {
-        println!("{:?}", kmer)
-    }
     unique_kmers
 }
 
@@ -60,8 +61,8 @@ fn recursive_extraction(
     paths: &mut BitVec,
     k: usize,
     idx: usize,
-    found_kmers: &mut HashMap<String, usize>,
-    unique_kmers: &mut HashMap<String, (usize, BitVec)>,
+    found_kmers: &mut HashMap<String, (usize, usize)>,
+    unique_kmers: &mut HashMap<String, ((usize, usize), BitVec)>,
     kmer_start: usize,
 ) {
     let mut loc_kmer = kmer.to_owned();
@@ -106,8 +107,8 @@ fn recursive_extraction(
             //TODO: determinare esattamente cosa sono i kmer unici
             unique_kmers.remove(&loc_kmer);
         } else {
-            found_kmers.insert(loc_kmer.clone(), kmer_start);
-            unique_kmers.insert(loc_kmer, (kmer_start, loc_paths));
+            found_kmers.insert(loc_kmer.clone(), (kmer_start, idx));
+            unique_kmers.insert(loc_kmer, ((kmer_start, idx), loc_paths));
         }
     }
 }
