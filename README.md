@@ -33,8 +33,23 @@ target/release/rs_hash_graph <reads.fa> <graph.gfa>
         <SEQUENCE_PATH>                 Input sequence (in .fasta format)
 
     Parameters:
-        -k, --k-len <KMER_LENGTH>       Set k-mer length [default: 5]
-        -s, --amb-strand <AMB_STRAND>   Set ambigous strand mode:
-                                        If 0 use input sequence
-                                        If 1 try also align with rev & compl [default: 0]
+        -k, --k-len <KMER_LENGTH>
+            Set k-mer length
+
+            [default: 5]
+
+        -r, --rec-mode <REC_MODE>
+            Set recombination selection mode:
+                If 0 consider every k-mers
+                If 1 consider only consecutive ones
+                if 2 consider only one unique k-mer for each position
+
+            [default: 0]
+
+        -s, --amb-strand <AMB_STRAND>
+            Set ambigous strand mode:
+                If 0 use input sequence
+                If 1 try also align with rev & compl
+
+            [default: 0]
 ```

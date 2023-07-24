@@ -35,7 +35,7 @@ struct Args {
         short = 'r',
         long = "rec-mode",
         default_value_t = 0,
-        help = "Set recombination selection mode:\n\tIf 0 consider every k-mers\n\tIf 1 consider only consecutive ones"
+        help = "Set recombination selection mode:\n\tIf 0 consider every k-mers\n\tIf 1 consider only consecutive ones\n\tif 2 consider only one unique k-mer for each position"
     )]
     rec_mode: i32,
 
