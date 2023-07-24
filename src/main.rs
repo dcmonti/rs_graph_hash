@@ -19,7 +19,7 @@ fn main() {
 
     // Find possible recombinations
     for (id, read) in reads {
-        let recombs = k_mers_match::find_recomb_kmers(&read, &unique_kmers, k, rec_mode, &graph);
+        let recombs = k_mers_match::find_recomb_kmers(&read, &unique_kmers, k, rec_mode);
         io_parser::output_formatter(&recombs, &graph, &id);
     }
 }
