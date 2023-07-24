@@ -180,18 +180,20 @@ pub fn output_formatter(recombs: &Vec<RecStruct>, graph: &PathGraph, id: &String
         let j_offset_end = get_offset(je, j_node_end, graph);
         let j_paths_id = get_paths(j_paths);
         let output = format!(
-            "{}\t{}[{}]\t{}[{}]\t{}\t{}[{}]\t{}[{}]\t{}",
+            "{}\t{}[{}]\t{}[{}]\t{}\t{}\t{}[{}]\t{}[{}]\t{}\t{}",
             id,
             i_node_start,
             i_offset_start,
             i_node_end,
             i_offset_end,
             i_paths_id,
+            rec.first_read_start,
             j_node_start,
             j_offset_start,
             j_node_end,
             j_offset_end,
-            j_paths_id
+            j_paths_id,
+            rec.second_read_start
         );
         outputs = format!("{}\n{}", outputs, output)
     }

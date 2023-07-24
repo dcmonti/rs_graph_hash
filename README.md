@@ -53,3 +53,18 @@ target/release/rs_hash_graph <reads.fa> <graph.gfa>
 
             [default: 0]
 ```
+
+## Output
+
+`rs_graph_hash` returns a `.rec` file if specified. It's a tab separated format, where each record is a possible recombination site made by 9 fields:
+
+1. Sequence id
+2. First k-mer starting position (graph)
+3. First k-mer ending position (graph)
+4. First k-mer paths
+5. First k-mer starting position (read)
+6. Second k-mer starting position (graph)
+7. Second k-mer ending position (graph)
+8. Second k-mer paths
+9. Second k-mer starting position (read)
+

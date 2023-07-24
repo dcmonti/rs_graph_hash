@@ -35,9 +35,11 @@ pub fn find_recomb_kmers(
                     first_kmer.start,
                     first_kmer.end,
                     first_kmer.paths.clone(),
+                    first_kmer.read_start,
                     second_kmer.start,
                     second_kmer.end,
                     second_kmer.paths.clone(),
+                    second_kmer.read_start,
                 );
                 recombs.push(rec);
                 //break;
@@ -60,7 +62,7 @@ fn filter_read_kmers(
     for i in 0..read.len() - k + 1 {
         let read_kmer: String = read.chars().skip(i).take(k).collect();
         if unique_kmers.contains_key(&read_kmer) && !found_kmers.contains(&read_kmer) {
-            let ((start, end), paths)= unique_kmers.get(&read_kmer).unwrap().to_owned();
+            let ((start, end), paths) = unique_kmers.get(&read_kmer).unwrap().to_owned();
             let candidate_kmer = CandidateKmer::build(start, end, paths, i);
             if rec_mode == 2 {
                 // if k-mers positions already covered by previous ones, skip
@@ -69,9 +71,7 @@ fn filter_read_kmers(
                     found_kmers.insert(read_kmer);
                 } else {
                     let last_kmer = candidate_kmers.last().unwrap();
-                    if !(start > last_kmer.start
-                        && start < last_kmer.end)
-                    {
+                    if !(start > last_kmer.start && start < last_kmer.end) {
                         candidate_kmers.push(candidate_kmer);
                         found_kmers.insert(read_kmer);
                     }
@@ -89,7 +89,7 @@ pub struct CandidateKmer {
     pub start: usize,
     pub end: usize,
     pub paths: BitVec,
-    pub read_start: usize
+    pub read_start: usize,
 }
 impl CandidateKmer {
     pub fn new() -> CandidateKmer {
@@ -97,21 +97,16 @@ impl CandidateKmer {
             start: 0,
             end: 0,
             paths: BitVec::new(),
-            read_start: 0
+            read_start: 0,
         }
     }
 
-    pub fn build(
-        start: usize,
-        end: usize,
-        paths: BitVec,
-        read_start: usize
-    ) -> CandidateKmer {
+    pub fn build(start: usize, end: usize, paths: BitVec, read_start: usize) -> CandidateKmer {
         CandidateKmer {
             start,
             end,
             paths,
-            read_start
+            read_start,
         }
     }
 }
