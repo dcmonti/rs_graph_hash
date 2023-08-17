@@ -64,6 +64,7 @@ fn filter_read_kmers(
         if unique_kmers.contains_key(&read_kmer) && !found_kmers.contains(&read_kmer) {
             let ((start, end), paths) = unique_kmers.get(&read_kmer).unwrap().to_owned();
             let candidate_kmer = CandidateKmer::build(start, end, paths, i);
+
             if rec_mode == 2 {
                 // if k-mers positions already covered by previous ones, skip
                 if candidate_kmers.is_empty() {
@@ -71,7 +72,9 @@ fn filter_read_kmers(
                     found_kmers.insert(read_kmer);
                 } else {
                     let last_kmer = candidate_kmers.last().unwrap();
-                    if !(start > last_kmer.start && start < last_kmer.end) {
+                    if !(start >= last_kmer.start && start <= last_kmer.end/*&& last_kmer.paths.eq(&candidate_kmer.paths)*/)
+                    {
+                        //println!("{i} - {} [{:?}]",i+k-1, &candidate_kmer.paths);
                         candidate_kmers.push(candidate_kmer);
                         found_kmers.insert(read_kmer);
                     }

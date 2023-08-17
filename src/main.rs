@@ -1,7 +1,10 @@
+use std::time::Instant;
+
 use rs_graph_hash::cli;
 use rs_graph_hash::io_parser;
 use rs_graph_hash::k_mers_extraction;
 use rs_graph_hash::k_mers_match;
+use rs_graph_hash::new_kmers_match;
 
 fn main() {
     // Parse args
@@ -19,7 +22,16 @@ fn main() {
 
     // Find possible recombinations
     for (id, read) in reads {
+        let start = Instant::now();
         let recombs = k_mers_match::find_recomb_kmers(&read, &unique_kmers, k, rec_mode);
+        let end = start.elapsed().as_nanos();
         io_parser::output_formatter(&recombs, &graph, &id);
+
+        println!("OLD: {end}");
+        let start = Instant::now();
+        let rec = new_kmers_match::match_read_kmers(&read, &unique_kmers, k);
+        let end = start.elapsed().as_nanos();
+        println!("NEW: {end}");
+        io_parser::output_formatter(&rec, &graph, &id);
     }
 }

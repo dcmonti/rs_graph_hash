@@ -1,0 +1,10 @@
+new-kmers-match ++ veloce
+idea è coprire read con kmer in match e saltare le posizioni coperte, ogni match aggiorno percorsi attuali
+    quando aggiornamento mi da tt bit a 0 -> ricombinazione (basta guardare solo match precedente e non tutti quelli prima!)
+
+OBB: da definire...
+    massimizzare copertura read con kmer unici del grafo?
+
+MODIFICHE:
+    * concatenare i kmer solo se start next effettivamente contenuta in intervallo previous, altrimenti tenere dei seed
+    * modificare output, RecStruct non molto adatta (anche CandidateKmer)

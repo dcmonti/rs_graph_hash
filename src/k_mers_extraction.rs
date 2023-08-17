@@ -104,7 +104,6 @@ fn recursive_extraction(
     }
     if loc_kmer.len() == k && loc_paths.any() {
         if found_kmers.contains_key(&loc_kmer) {
-            //TODO: determinare esattamente cosa sono i kmer unici
             unique_kmers.remove(&loc_kmer);
         } else {
             found_kmers.insert(loc_kmer.clone(), (kmer_start, idx));
