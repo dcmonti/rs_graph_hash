@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use bit_vec::BitVec;
 
@@ -57,11 +57,10 @@ fn filter_read_kmers(
     rec_mode: i32,
 ) -> Vec<CandidateKmer> {
     let mut candidate_kmers = Vec::new();
-    let mut found_kmers = HashSet::new();
 
     for i in 0..read.len() - k + 1 {
         let read_kmer: String = read.chars().skip(i).take(k).collect();
-        if unique_kmers.contains_key(&read_kmer) && !found_kmers.contains(&read_kmer) {
+        if unique_kmers.contains_key(&read_kmer) {
             let ((start, end), paths) = unique_kmers.get(&read_kmer).unwrap().to_owned();
             let candidate_kmer = CandidateKmer::build(start, end, paths, i);
 
@@ -69,19 +68,15 @@ fn filter_read_kmers(
                 // if k-mers positions already covered by previous ones, skip
                 if candidate_kmers.is_empty() {
                     candidate_kmers.push(candidate_kmer);
-                    found_kmers.insert(read_kmer);
                 } else {
                     let last_kmer = candidate_kmers.last().unwrap();
                     if !(start >= last_kmer.start && start <= last_kmer.end/*&& last_kmer.paths.eq(&candidate_kmer.paths)*/)
                     {
-                        //println!("{i} - {} [{:?}]",i+k-1, &candidate_kmer.paths);
                         candidate_kmers.push(candidate_kmer);
-                        found_kmers.insert(read_kmer);
                     }
                 }
             } else {
                 candidate_kmers.push(candidate_kmer);
-                found_kmers.insert(read_kmer);
             }
         }
     }

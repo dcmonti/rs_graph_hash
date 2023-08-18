@@ -71,6 +71,10 @@ fn recursive_extraction(
     loc_kmer.push(graph.lnz[idx]);
     loc_paths.and(&graph.paths_nodes[idx]);
 
+    if !loc_paths.any() {
+        return;
+    }
+
     if loc_kmer.len() < k && idx < graph.lnz.len() - 1 {
         if !graph.nws[idx] {
             recursive_extraction(

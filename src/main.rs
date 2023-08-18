@@ -24,14 +24,17 @@ fn main() {
     for (id, read) in reads {
         let start = Instant::now();
         let recombs = k_mers_match::find_recomb_kmers(&read, &unique_kmers, k, rec_mode);
-        let end = start.elapsed().as_nanos();
+        let end = start.elapsed().as_millis();
         io_parser::output_formatter(&recombs, &graph, &id);
 
         println!("OLD: {end}");
         let start = Instant::now();
-        let rec = new_kmers_match::match_read_kmers(&read, &unique_kmers, k);
-        let end = start.elapsed().as_nanos();
+        let seeds = new_kmers_match::match_read_kmers(&read, &unique_kmers, k);
+        let end = start.elapsed().as_millis();
         println!("NEW: {end}");
-        io_parser::output_formatter(&rec, &graph, &id);
+
+        for seed in seeds.iter() {
+            println!("{:#?}", seed)
+        }
     }
 }
