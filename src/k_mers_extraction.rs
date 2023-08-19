@@ -1,117 +1,65 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 
 use bit_vec::BitVec;
+use handlegraph::{
+    handle::Handle,
+    handlegraph::HandleGraph,
+    hashgraph::HashGraph,
+};
 
-use crate::path_graph::PathGraph;
+use crate::coordinate::Coordinate;
 
-// unique k-mers in graph: (k-mer, (k-mer start, k-mer end), paths)
-pub fn extract_graph_unique_kmers(
-    graph: &PathGraph,
-    k: usize,
-) -> HashMap<String, ((usize, usize), BitVec)> {
-    let mut unique_kmers = HashMap::new();
-    let mut found_kmers = HashMap::new();
+pub fn extract_unique_kmers(graph: &HashGraph, k_len: usize) -> HashMap<String, (Coordinate, Coordinate, BitVec)> {
 
-    let starting_positions = graph.succ_hash.get_succs_and_paths(0);
-    let mut positions = VecDeque::new();
-    let mut visited_nodes = BitVec::from_elem(
-        *graph.nodes_id_pos.iter().max().unwrap() as usize + 1,
-        false,
-    );
-    for (path_start, _) in starting_positions {
-        if !positions.contains(&path_start) {
-            positions.push_front(path_start);
-        }
+    let paths_set = &graph.paths;
+
+    let mut paths = Vec::new();
+    for (_id, path) in paths_set.iter() {
+        paths.push(path)
+    }
+    for (id, path) in paths_set.iter() {
+        paths[*id as usize] = path
     }
 
-    while !positions.is_empty() {
-        let window_pos = positions.pop_front().unwrap();
-        if !visited_nodes[graph.nodes_id_pos[window_pos] as usize] {
-            let kmer = String::new();
-            let mut paths = BitVec::from_elem(graph.paths_number, true);
-            recursive_extraction(
-                graph,
-                &kmer,
-                &mut paths,
-                k,
-                window_pos,
-                &mut found_kmers,
-                &mut unique_kmers,
-                window_pos,
-            );
+    let paths_number = paths_set.keys().len();
 
-            if graph.nws[window_pos] {
-                visited_nodes.set(graph.nodes_id_pos[window_pos] as usize, true);
-                for (succ, _) in graph.succ_hash.get_succs_and_paths(window_pos) {
-                    if graph.lnz[succ] != 'F' {
-                        positions.push_front(succ);
-                    }
+    let mut found_kmers = HashMap::new();
+    let mut unique_kmers = HashMap::new();
+
+    for (path_id, path) in paths.iter().enumerate() {
+        let path_nodes = path.nodes.iter().collect::<Vec<&Handle>>();
+        let mut path_seq = String::new();
+        let mut path_node_id: Vec<u64> = Vec::new();
+        
+        for handle in path_nodes {
+            let handle_seq = String::from_utf8(graph.sequence(*handle)).unwrap();
+            path_seq.push_str(&handle_seq);
+            for _ in 0..handle_seq.len() {
+                path_node_id.push(handle.id().into())
+            }
+        }
+        for i in 0..path_seq.len() - k_len + 1 {
+            let kmer: String = path_seq.chars().skip(i).take(k_len).collect();
+            let kmer_start = Coordinate::build(path_node_id[i], i, &path_node_id);
+            let kmer_end = Coordinate::build(path_node_id[i+k_len-1], i+k_len-1, &path_node_id);
+
+            if found_kmers.contains_key(&kmer) {
+                let (found_kmer_start, found_kmer_end) = found_kmers.get(&kmer).unwrap();
+                if unique_kmers.contains_key(&kmer) && kmer_start.equal(found_kmer_start) && kmer_end.equal(found_kmer_end) {
+                    let (_, _, paths): &mut (Coordinate, Coordinate, BitVec) = unique_kmers.get_mut(&kmer).unwrap();
+                    paths.set(path_id, true)
+                } else {
+                    unique_kmers.remove(&kmer);
                 }
             } else {
-                positions.push_front(window_pos + 1)
+                found_kmers.insert(kmer.clone(), (kmer_start.clone(), kmer_end.clone()));
+
+                let mut kmer_paths = BitVec::from_elem(paths_number, false);
+                kmer_paths.set(path_id, true);
+                unique_kmers.insert(kmer, (kmer_start, kmer_end, kmer_paths));
             }
+
         }
     }
-    unique_kmers
-}
-
-fn recursive_extraction(
-    graph: &PathGraph,
-    kmer: &str,
-    paths: &mut BitVec,
-    k: usize,
-    idx: usize,
-    found_kmers: &mut HashMap<String, (usize, usize)>,
-    unique_kmers: &mut HashMap<String, ((usize, usize), BitVec)>,
-    kmer_start: usize,
-) {
-    let mut loc_kmer = kmer.to_owned();
-    let mut loc_paths = paths.clone();
-
-    loc_kmer.push(graph.lnz[idx]);
-    loc_paths.and(&graph.paths_nodes[idx]);
-
-    if !loc_paths.any() {
-        return;
-    }
-
-    if loc_kmer.len() < k && idx < graph.lnz.len() - 1 {
-        if !graph.nws[idx] {
-            recursive_extraction(
-                graph,
-                &loc_kmer,
-                &mut loc_paths,
-                k,
-                idx + 1,
-                found_kmers,
-                unique_kmers,
-                kmer_start,
-            );
-        } else {
-            for (succ_idx, _) in graph.succ_hash.get_succs_and_paths(idx) {
-                if graph.lnz[succ_idx] != 'F' {
-                    recursive_extraction(
-                        graph,
-                        &loc_kmer,
-                        &mut loc_paths,
-                        k,
-                        succ_idx,
-                        found_kmers,
-                        unique_kmers,
-                        kmer_start,
-                    );
-                } else {
-                    return;
-                }
-            }
-        }
-    }
-    if loc_kmer.len() == k && loc_paths.any() {
-        if found_kmers.contains_key(&loc_kmer) {
-            unique_kmers.remove(&loc_kmer);
-        } else {
-            found_kmers.insert(loc_kmer.clone(), (kmer_start, idx));
-            unique_kmers.insert(loc_kmer, ((kmer_start, idx), loc_paths));
-        }
-    }
+   unique_kmers
 }

@@ -10,6 +10,9 @@ MODIFICHE:
     * modificare output, RecStruct non molto adatta (anche CandidateKmer)
     * separare estrazione kmer da matching, dump di unique kmer?
     * introdurre concetto rispetto distanza: due kmer matchano read, validi se la loro distanza nel grafo simile a quella nella read
+    * estrarre kmer unici direttamente durante parsing del grafo?
     
 OSSERVAZIONI:
     * estrazione kmer unici è lenta se kmer lungo... forse iterativa è meglio
+    * bottleneck è estrazione kmer unici
+    * provare estrazione kmer direttamente dai percorsi 

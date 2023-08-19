@@ -2,8 +2,8 @@ use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[clap(
-    author = "Davide Monti <d.monti11@campus.unimib.it>\nNada Mohamed <n.mohamed3@campus.unimib.it>",
-    version,
+    author = "Davide Monti <d.monti11@campus.unimib.it>",
+    version = "0.1.0",
     about = "rs_graph_hash",
     long_about = "Alignment free sequence to graph"
 )]
