@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bit_vec::BitVec;
 
-use crate::{seed_kmer::SeedKmer, coordinate::Coordinate};
+use crate::{coordinate::Coordinate, seed_kmer::SeedKmer};
 
 pub fn match_read_kmers(
     read: &String,
@@ -17,7 +17,13 @@ pub fn match_read_kmers(
         if unique_kmers.contains_key(&read_kmer) {
             let (start, end, paths) = unique_kmers.get(&read_kmer).unwrap().to_owned();
             if read_to_path_align.is_empty() {
-                let seed_kmer = SeedKmer::build(start, end, paths, Coordinate::new(i), Coordinate::new(i+k-1));
+                let seed_kmer = SeedKmer::build(
+                    start,
+                    end,
+                    paths,
+                    Coordinate::new(i),
+                    Coordinate::new(i + k - 1),
+                );
                 read_to_path_align.push(seed_kmer)
             } else {
                 let last_match = read_to_path_align.last_mut().unwrap();
@@ -25,19 +31,26 @@ pub fn match_read_kmers(
                 let mut actual_paths = last_match.paths.clone();
                 actual_paths.and(&paths);
 
-                if actual_paths.any() {
+                if actual_paths.any()
+                    && start.included(&last_match.positions[0], &last_match.positions[1])
+                {
                     last_match.update_ends(end, Coordinate::new(i + k - 1), actual_paths)
                 } else {
-                    let seed_kmer = SeedKmer::build(start, end, paths, Coordinate::new(i), Coordinate::new(i+k-1));
+                    let seed_kmer = SeedKmer::build(
+                        start,
+                        end,
+                        paths,
+                        Coordinate::new(i),
+                        Coordinate::new(i + k - 1),
+                    );
                     read_to_path_align.push(seed_kmer)
                 }
             }
 
-            i += k
+            i += k / 2
         } else {
             i += 1
         }
     }
     read_to_path_align
 }
-

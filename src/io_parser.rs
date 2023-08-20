@@ -8,10 +8,7 @@ use std::{
     path::Path,
 };
 
-use crate::{
-    cli,
-    seed_kmer::SeedKmer
-};
+use crate::{cli, seed_kmer::SeedKmer};
 
 pub fn read_graph_w_path(file_path: &str) -> HashGraph {
     let parser = GFAParser::new();
@@ -58,12 +55,11 @@ pub fn output_formatter(seeds: &Vec<SeedKmer>, id: &String) {
     let out_path: String = cli::get_out_file();
 
     for seed in seeds {
-
         let kmer_start = seed.positions[0];
         let kmer_end = seed.positions[1];
         let read_start = seed.positions[2].offset;
         let read_end = seed.positions[3].offset;
-        
+
         let start_node_id = kmer_start.node_id;
         let end_node_id = kmer_end.node_id;
         let start_offset = kmer_start.offset;

@@ -7,12 +7,15 @@ OBB: da definire...
 
 MODIFICHE:
     * concatenare i kmer solo se start next effettivamente contenuta in intervallo previous, altrimenti tenere dei seed (NON FACILE)
-    * modificare output, RecStruct non molto adatta (anche CandidateKmer)
     * separare estrazione kmer da matching, dump di unique kmer?
     * introdurre concetto rispetto distanza: due kmer matchano read, validi se la loro distanza nel grafo simile a quella nella read
-    * estrarre kmer unici direttamente durante parsing del grafo?
+    * implementare reverse & complement
+    * gestire paths -
+    
+
     
 OSSERVAZIONI:
-    * estrazione kmer unici è lenta se kmer lungo... forse iterativa è meglio
-    * bottleneck è estrazione kmer unici
-    * provare estrazione kmer direttamente dai percorsi 
+    * doppia modalità: concatena se path uguali, concatena se path uguali e start_actual in intervallo previous
+    * incremento i in kmers_match: 1, k/2 o k? se k concatena sempre
+
+    
