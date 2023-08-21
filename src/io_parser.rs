@@ -116,7 +116,7 @@ fn get_paths(v: &BitVec) -> String {
     let mut paths_vec = Vec::new();
     for (path, is_present) in v.iter().enumerate() {
         if is_present {
-            paths_vec.push((path + 1).to_string())
+            paths_vec.push((path).to_string())
         }
     }
     paths_vec.join(",")

@@ -7,11 +7,10 @@ OBB: da definire...
 
 MODIFICHE:
     * concatenare i kmer solo se start next effettivamente contenuta in intervallo previous, altrimenti tenere dei seed (NON FACILE)
-    * separare estrazione kmer da matching, dump di unique kmer?
     * introdurre concetto rispetto distanza: due kmer matchano read, validi se la loro distanza nel grafo simile a quella nella read
     * implementare reverse & complement
     * gestire paths -
-    
+    * riscrivere help
 
     
 OSSERVAZIONI:

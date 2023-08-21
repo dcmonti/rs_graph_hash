@@ -1,6 +1,9 @@
-#[derive(Clone, Debug, Copy)]
+use serde::Deserialize;
+use serde::Serialize;
+
+#[derive(Clone, Debug, Copy, Serialize, Deserialize)]
 pub struct Coordinate {
-    pub node_id: usize, // [k-mer start, k-mer end, read start, read end]
+    pub node_id: usize,
     pub offset: usize,
 }
 
@@ -27,7 +30,7 @@ impl Coordinate {
 
         Coordinate {
             node_id: handle_id as usize,
-            offset
+            offset,
         }
     }
 
@@ -46,12 +49,12 @@ impl Coordinate {
 
         let before_end = if self.node_id < end_coor.node_id {
             true
-        } else if self.node_id == end_coor.node_id{
+        } else if self.node_id == end_coor.node_id {
             self.offset <= end_coor.offset
         } else {
             false
         };
-        
+
         after_start && before_end
-}
+    }
 }

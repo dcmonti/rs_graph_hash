@@ -10,16 +10,18 @@ use clap::Parser;
 struct Args {
     #[clap(
         help_heading = "I/O",
-        help = "Input sequence (in .fasta format)",
-        required = true
-    )]
-    sequence_path: String,
-    #[clap(
-        help_heading = "I/O",
-        help = "Input graph (in .gfa format)",
+        help = "Input graph (in .gfa format or dump file)",
+        default_value = "none",
         required = true
     )]
     graph_path: String,
+
+    #[clap(
+        help_heading = "I/O",
+        help = "Input sequence (in .fasta format)",
+        default_value = "none"
+    )]
+    sequence_path: String,
 
     #[clap(
         help_heading = "Parameters",
@@ -32,12 +34,12 @@ struct Args {
 
     #[clap(
         help_heading = "Parameters",
-        short = 'r',
-        long = "rec-mode",
+        short = 'm',
+        long = "mode",
         default_value_t = 0,
-        help = "Set recombination selection mode:\n\tIf 0 consider every k-mers\n\tIf 1 consider only consecutive ones\n\tif 2 consider only one unique k-mer for each position"
+        help = "Set execution mode"
     )]
-    rec_mode: i32,
+    mode: i32,
 
     //Ambiguos strand mode
     #[clap(
@@ -54,7 +56,7 @@ struct Args {
         short = 'o',
         long = "out_file",
         default_value = "standard output",
-        help = "Output reombinations file"
+        help = "Output file path"
     )]
     out_file: String,
 }
@@ -85,7 +87,7 @@ pub fn get_out_file() -> String {
     args.out_file
 }
 
-pub fn get_rec_mode() -> i32 {
+pub fn get_mode() -> i32 {
     let args = Args::parse();
-    args.rec_mode
+    args.mode
 }
