@@ -1,20 +1,20 @@
-new-kmers-match ++ veloce
 idea è coprire read con kmer in match e saltare le posizioni coperte, ogni match aggiorno percorsi attuali
     quando aggiornamento mi da tt bit a 0 -> ricombinazione (basta guardare solo match precedente e non tutti quelli prima!)
 
 OBB: da definire...
     massimizzare copertura read con kmer unici del grafo?
+    trovare solo possibili siti di ricombinazione?
 
 MODIFICHE:
-    * concatenare i kmer solo se start next effettivamente contenuta in intervallo previous, altrimenti tenere dei seed (NON FACILE)
     * introdurre concetto rispetto distanza: due kmer matchano read, validi se la loro distanza nel grafo simile a quella nella read
     * implementare reverse & complement
     * gestire paths -
     * riscrivere help
+    * gestire  caso -o standard output
 
     
 OSSERVAZIONI:
-    * doppia modalità: concatena se path uguali, concatena se path uguali e start_actual in intervallo previous
-    * incremento i in kmers_match: 1, k/2 o k? se k concatena sempre
-
+    * premesse: nodes_id in ordine topologico
+    * incremento i in kmers_match: 1, k/2 o k? se k non concatena mai
+    * produrre matches iniziali e poi ripulire/ottimizzare?
     

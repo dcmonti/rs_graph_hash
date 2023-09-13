@@ -8,6 +8,7 @@ pub fn match_read_kmers(
     read: &String,
     unique_kmers: &HashMap<String, (Coordinate, Coordinate, BitVec)>,
     k: usize,
+    base_skip: usize
 ) -> Vec<SeedKmer> {
     let mut read_to_path_align = Vec::new();
 
@@ -35,7 +36,7 @@ pub fn match_read_kmers(
                     && start.included(&last_match.positions[0], &last_match.positions[1])
                 {
                     last_match.update_ends(end, Coordinate::new(i + k - 1), actual_paths)
-                } else {
+                } else if !start.included(&last_match.positions[0], &last_match.positions[1]) {
                     let seed_kmer = SeedKmer::build(
                         start,
                         end,
@@ -47,7 +48,7 @@ pub fn match_read_kmers(
                 }
             }
 
-            i += k / 2
+            i += base_skip
         } else {
             i += 1
         }

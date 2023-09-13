@@ -2,7 +2,7 @@
 name = "rs_graph_hash"
 version = "0.1.0"
 edition = "2021"
-authors = ["Davide Monti <d.monti11@campus.unimib.it>", "Nada Mohamed <n.mohamed3@campus.unimib.it>"]
+authors = ["Davide Monti <d.monti11@campus.unimib.it>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,3 +15,4 @@ bio = "*"
 rayon = "1.7.0"
 syntect = "5.1.0"
 serde = { version = "1.0", features = ["derive"] }
+ahash = { version = "0.8.3", features = ["serde"] }

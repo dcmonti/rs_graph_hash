@@ -37,9 +37,18 @@ struct Args {
         short = 'm',
         long = "mode",
         default_value_t = 0,
-        help = "Set execution mode"
+        help = "Set execution mode:\n\t0: find matching kmers between a read (.fasta) and a graph (.gfa)\n\t1: find matching kmers between a read (.fasta) and a .dmp file\n\t2: extract and save in a .dmp file a graph's unique kmers"
     )]
     mode: i32,
+
+    #[clap(
+        help_heading = "Parameters",
+        short = 'b',
+        long = "skip-base",
+        default_value_t = 1,
+        help = "Set bp to skip after matching kmers couple"
+    )]
+    base_skip: i32,
 
     //Ambiguos strand mode
     #[clap(
@@ -90,4 +99,9 @@ pub fn get_out_file() -> String {
 pub fn get_mode() -> i32 {
     let args = Args::parse();
     args.mode
+}
+
+pub fn get_base_skip() -> usize {
+    let args = Args::parse();
+    args.base_skip as usize
 }
