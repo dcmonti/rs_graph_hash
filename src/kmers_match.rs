@@ -8,15 +8,15 @@ pub fn match_read_kmers(
     read: &String,
     unique_kmers: &HashMap<String, (Coordinate, Coordinate, BitVec)>,
     k: usize,
-    base_skip: usize
+    base_skip: usize,
 ) -> Vec<SeedKmer> {
     let mut read_to_path_align = Vec::new();
 
     let mut i = 0;
     while i < read.len() - k + 1 {
-        let read_kmer: String = read.chars().skip(i).take(k).collect();
-        if unique_kmers.contains_key(&read_kmer) {
-            let (start, end, paths) = unique_kmers.get(&read_kmer).unwrap().to_owned();
+        let read_kmer = &read[i..i + k];
+        if unique_kmers.contains_key(read_kmer) {
+            let (start, end, paths) = unique_kmers.get(read_kmer).unwrap().to_owned();
             if read_to_path_align.is_empty() {
                 let seed_kmer = SeedKmer::build(
                     start,

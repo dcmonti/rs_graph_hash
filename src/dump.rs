@@ -21,4 +21,3 @@ pub fn load_unique_kmers(
         from_dump_file(path).unwrap();
     (unique_kmers, k)
 }
-
