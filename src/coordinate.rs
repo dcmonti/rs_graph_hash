@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -39,20 +41,16 @@ impl Coordinate {
     }
 
     pub fn included(&self, start_coor: &Coordinate, end_coor: &Coordinate) -> bool {
-        let after_start = if self.node_id > start_coor.node_id {
-            true
-        } else if self.node_id == start_coor.node_id {
-            self.offset >= start_coor.offset
-        } else {
-            false
+        let after_start = match self.node_id.cmp(&start_coor.node_id) {
+            Ordering::Greater => true,
+            Ordering::Equal => self.offset >= start_coor.offset,
+            Ordering::Less => false,
         };
 
-        let before_end = if self.node_id < end_coor.node_id {
-            true
-        } else if self.node_id == end_coor.node_id {
-            self.offset <= end_coor.offset
-        } else {
-            false
+        let before_end = match self.node_id.cmp(&end_coor.node_id) {
+            Ordering::Greater => false,
+            Ordering::Equal => self.offset <= end_coor.offset,
+            Ordering::Less => true,
         };
 
         after_start && before_end

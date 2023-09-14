@@ -1,6 +1,6 @@
 use handlegraph::hashgraph::Path;
 use rayon::prelude::*;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap as HashMap;
 use std::sync::{Arc, Mutex};
 
 use bit_vec::BitVec;
@@ -20,9 +20,9 @@ pub fn extract_unique_kmers(
     let unique_kmers = Arc::new(Mutex::new(HashMap::<
         String,
         (Coordinate, Coordinate, BitVec),
-    >::new()));
+    >::default()));
     let found_kmers = Arc::new(Mutex::new(
-        HashMap::<String, (Coordinate, Coordinate)>::new(),
+        HashMap::<String, (Coordinate, Coordinate)>::default(),
     ));
 
     // parallel extraction
@@ -42,6 +42,7 @@ pub fn extract_unique_kmers(
 
         for i in 0..path_seq.len() - k_len + 1 {
             let kmer = &path_seq[i..i + k_len];
+
             let kmer_start = Coordinate::build(path_nodes_id[i], i, &path_nodes_id);
             let kmer_end =
                 Coordinate::build(path_nodes_id[i + k_len - 1], i + k_len - 1, &path_nodes_id);
