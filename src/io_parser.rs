@@ -31,20 +31,21 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
 
         let read_id = record.id().to_owned();
 
-        let read: String = String::from_utf8(b_read.clone()).unwrap();
+        let read: String = String::from_utf8_lossy(&b_read).to_string();
 
         let mut pos_read_id = read_id.clone();
         pos_read_id.push('+');
         sequences.push((pos_read_id, read));
         if amb_mode {
             b_read.reverse();
-            let mut rev_and_compl = Vec::new();
-            for c in b_read.iter() {
-                rev_and_compl.push(bio::alphabets::dna::complement(*c));
-            }
+            let b_read: Vec<u8> = b_read
+                .iter()
+                .map(|c| bio::alphabets::dna::complement(*c))
+                .collect();
+
             let mut rev_read_id = read_id.clone();
             rev_read_id.push('-');
-            sequences.push((rev_read_id, String::from_utf8(rev_and_compl).unwrap()))
+            sequences.push((rev_read_id, String::from_utf8(b_read).unwrap()))
         }
     }
     sequences
