@@ -8,12 +8,14 @@ use rs_graph_hash::kmers_match;
 
 fn main() {
     // Parse args
-    let k = cli::get_kmer_length() as usize;
     let graph_path = cli::get_graph_path();
     let read_path = cli::get_sequence_path();
+
+    let k = cli::get_kmer_length();
     let amb_mode = cli::get_amb_mode();
     let mode = cli::get_mode();
     let base_skip = cli::get_base_skip();
+    let seed_merge = cli::get_seed_merge();
 
     match mode {
         0 => {
@@ -25,7 +27,8 @@ fn main() {
 
             // Find possible recombinations
             for (id, read) in reads {
-                let seeds = kmers_match::match_read_kmers(&read, &unique_kmers, k, base_skip);
+                let seeds =
+                    kmers_match::match_read_kmers(&read, &unique_kmers, k, base_skip, seed_merge);
                 io_parser::output_formatter(&seeds, &id)
             }
         }
@@ -35,7 +38,8 @@ fn main() {
 
             // Find possible recombinations
             for (id, read) in reads {
-                let seeds = kmers_match::match_read_kmers(&read, &unique_kmers, k, base_skip);
+                let seeds =
+                    kmers_match::match_read_kmers(&read, &unique_kmers, k, base_skip, seed_merge);
                 io_parser::output_formatter(&seeds, &id)
             }
         }

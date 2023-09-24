@@ -11,11 +11,12 @@ MODIFICHE:
     * gestire paths -
     * riscrivere help
     * gestire  caso -o standard output
-    * risolvere bug bio
-
+    * introdurre modalità concatenazione kmer: se compresi nell'intervallo oppure se paths uguali concateno di default
     
 OSSERVAZIONI:
     * premesse: nodes_id in ordine topologico
     * incremento i in kmers_match: 1, k/2 o k? se k non concatena mai
     * produrre matches iniziali e poi ripulire/ottimizzare?
+    * provare con dati sporchi
+    * provare con "allineamento" locale
     

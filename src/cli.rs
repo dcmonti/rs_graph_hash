@@ -50,10 +50,19 @@ struct Args {
     )]
     base_skip: i32,
 
-    //Ambiguos strand mode
     #[clap(
         help_heading = "Parameters",
         short = 's',
+        long = "seed-merge",
+        default_value_t = 0,
+        help = "Set seed merge mode:\n\tIf 0 merge seed if they cover a common subportion of the graph\n\tIf 1 merge seed if they have common paths"
+    )]
+    seed_merge: i32,
+
+    //Ambiguos strand mode
+    #[clap(
+        help_heading = "Parameters",
+        short = 'a',
         long = "amb-strand",
         default_value_t = 0,
         help = "Set ambigous strand mode:\n\tIf 0 use input sequence\n\tIf 1 try also align with rev & compl"
@@ -70,9 +79,9 @@ struct Args {
     out_file: String,
 }
 
-pub fn get_kmer_length() -> i32 {
+pub fn get_kmer_length() -> usize {
     let args = Args::parse();
-    args.kmer_length
+    args.kmer_length as usize
 }
 
 pub fn get_sequence_path() -> String {
@@ -104,4 +113,14 @@ pub fn get_mode() -> i32 {
 pub fn get_base_skip() -> usize {
     let args = Args::parse();
     args.base_skip as usize
+}
+
+pub fn get_seed_merge() -> i32 {
+    let args = Args::parse();
+    let seed_merge = args.seed_merge;
+    if seed_merge == 0 || seed_merge == 1 {
+        seed_merge
+    } else {
+        panic!("seed merge mode must be 0 or 1")
+    }
 }

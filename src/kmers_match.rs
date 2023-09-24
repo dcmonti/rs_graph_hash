@@ -9,6 +9,7 @@ pub fn match_read_kmers(
     unique_kmers: &HashMap<String, (Coordinate, Coordinate, BitVec)>,
     k: usize,
     base_skip: usize,
+    seed_merge: i32,
 ) -> Vec<SeedKmer> {
     let mut read_to_path_align = Vec::new();
 
@@ -32,19 +33,36 @@ pub fn match_read_kmers(
                 let mut actual_paths = last_match.paths.clone();
                 actual_paths.and(&paths);
 
-                if actual_paths.any()
-                    && start.included(&last_match.positions[0], &last_match.positions[1])
-                {
-                    last_match.update_ends(end, Coordinate::new(i + k - 1), actual_paths)
-                } else if !start.included(&last_match.positions[0], &last_match.positions[1]) {
-                    let seed_kmer = SeedKmer::build(
-                        start,
-                        end,
-                        paths,
-                        Coordinate::new(i),
-                        Coordinate::new(i + k - 1),
-                    );
-                    read_to_path_align.push(seed_kmer)
+                // consider seed-merge mode to update the last seed
+                if seed_merge == 0 {
+                    if actual_paths.any()
+                        && start.included(&last_match.positions[0], &last_match.positions[1])
+                    {
+                        last_match.update_ends(end, Coordinate::new(i + k - 1), actual_paths)
+                    } else if !start.included(&last_match.positions[0], &last_match.positions[1]) {
+                        let seed_kmer = SeedKmer::build(
+                            start,
+                            end,
+                            paths,
+                            Coordinate::new(i),
+                            Coordinate::new(i + k - 1),
+                        );
+                        read_to_path_align.push(seed_kmer)
+                    }
+                } else if seed_merge == 1 {
+                    if actual_paths.any() {
+                        last_match.update_ends(end, Coordinate::new(i + k - 1), actual_paths)
+                    } else if !start.included(&last_match.positions[0], &last_match.positions[1]) {
+                        let seed_kmer = SeedKmer::build(
+                            start,
+                            end,
+                            paths,
+                            Coordinate::new(i),
+                            Coordinate::new(i + k - 1),
+                        );
+                        read_to_path_align.push(seed_kmer)
+                    }
+                } else {
                 }
             }
 
