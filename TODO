@@ -12,6 +12,7 @@ MODIFICHE:
     * riscrivere help
     * gestire  caso -o standard output
     * introdurre modalità concatenazione kmer: se compresi nell'intervallo oppure se paths uguali concateno di default
+    * gestione errori migliore
     
 OSSERVAZIONI:
     * premesse: nodes_id in ordine topologico
