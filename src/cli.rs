@@ -55,7 +55,7 @@ struct Args {
         short = 's',
         long = "seed-merge",
         default_value_t = 0,
-        help = "Set seed merge mode:\n\tIf 0 merge seed if they cover a common subportion of the graph\n\tIf 1 merge seed if they have common paths"
+        help = "Set seed merge mode:\n\tIf 0 merge seed if they cover a common subportion of the graph and have common paths\n\tIf 1 merge seed if they have common paths\n\tIf 2 don't merge seed"
     )]
     seed_merge: i32,
 
@@ -118,9 +118,9 @@ pub fn get_base_skip() -> usize {
 pub fn get_seed_merge() -> i32 {
     let args = Args::parse();
     let seed_merge = args.seed_merge;
-    if seed_merge == 0 || seed_merge == 1 {
+    if seed_merge == 0 || seed_merge == 1 || seed_merge == 2 {
         seed_merge
     } else {
-        panic!("seed merge mode must be 0 or 1")
+        panic!("seed merge mode must be 0, 1 or 2")
     }
 }

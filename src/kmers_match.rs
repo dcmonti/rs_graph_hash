@@ -63,6 +63,14 @@ pub fn match_read_kmers(
                         read_to_path_align.push(seed_kmer)
                     }
                 } else {
+                    let seed_kmer = SeedKmer::build(
+                        start,
+                        end,
+                        paths,
+                        Coordinate::new(i),
+                        Coordinate::new(i + k - 1),
+                    );
+                    read_to_path_align.push(seed_kmer)
                 }
             }
 

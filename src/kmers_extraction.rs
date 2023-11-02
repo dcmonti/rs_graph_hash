@@ -55,6 +55,7 @@ pub fn extract_unique_kmers(
                     if kmer_start.equal(found_kmer_start) && kmer_end.equal(found_kmer_end) {
                         paths.set(path.path_id as usize, true);
                     } else {
+                        // println!("Repeated kmer: [{}]:{}\t[{}]:{}", kmer_start.node_id, kmer_start.offset, kmer_end.node_id, kmer_end.offset);
                         unique_kmers_locked.remove(kmer);
                     }
                 }
