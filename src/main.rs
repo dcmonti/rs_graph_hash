@@ -1,10 +1,11 @@
 use rayon::prelude::*;
+use rs_graph_hash::chaining;
 use rs_graph_hash::cli;
 use rs_graph_hash::dump;
-use rs_graph_hash::extract_subgraph;
 use rs_graph_hash::io_parser;
 use rs_graph_hash::kmers_extraction;
 use rs_graph_hash::kmers_match;
+use rs_graph_hash::seed_filter;
 use std::panic;
 
 fn main() {
@@ -29,35 +30,18 @@ fn main() {
 
                 // Parallel kmer match
                 reads.par_iter().for_each(|(id, read)| {
-                    let seeds = kmers_match::match_read_kmers(
+
+                    // Extract read's seeds
+                    let mut seeds = kmers_match::match_read_kmers(
                         &read,
                         &unique_kmers,
                         k,
                         base_skip,
                         seed_merge,
                     );
-                    // TODO:
-                    //  estrazione precisa della sottostringa, path nel subgraph?
-                    //  EXAMPLE: 118 136
-                    if seeds.len() >= 2 {
-                        for i in 0..seeds.len() - 1 {
-                            let this_seed = seeds.get(i).unwrap();
-                            let next_seed = seeds.get(i + 1).unwrap();
-                            let sub = extract_subgraph::execute(
-                                &graph,
-                                this_seed.positions[1].node_id,
-                                this_seed.positions[1].offset,
-                                next_seed.positions[0].node_id,
-                                next_seed.positions[0].offset,
-                            );
-                            let subread = read
-                                [this_seed.positions[3].offset..next_seed.positions[2].offset]
-                                .to_string();
-                            let res = recgraph::api::align_local_no_gap(&subread, &sub, None, None);
-                            println!("{}", res.to_string());
-                        }
-                    }
-
+                    seed_filter::filter(&mut seeds, k);
+                    // Chaining
+                    // chaining::execute(&seeds, &graph, &read);
                     io_parser::output_formatter(&seeds, &id);
                 });
             }

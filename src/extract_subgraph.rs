@@ -24,7 +24,7 @@ pub fn execute(
 
     let end_node_id = NodeId::from(end_node);
     let last_handle = sub_graph.create_handle(
-        &graph.get_node(&end_node_id).unwrap().sequence[..end_offset],
+        &graph.get_node(&end_node_id).unwrap().sequence[..=end_offset],
         end_node_id,
     );
 

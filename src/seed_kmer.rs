@@ -2,7 +2,7 @@ use bit_vec::BitVec;
 
 use crate::coordinate::Coordinate;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SeedKmer {
     pub positions: [Coordinate; 4], // [k-mer start, k-mer end, read start, read end]
     pub paths: BitVec,

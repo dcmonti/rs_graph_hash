@@ -20,4 +20,4 @@ OSSERVAZIONI:
     * produrre matches iniziali e poi ripulire/ottimizzare?
     * provare con dati sporchi
     * provare con "allineamento" locale
-    
+    * ricombinazioni del tipo i-j-i lo sono davvero? come escluderle?

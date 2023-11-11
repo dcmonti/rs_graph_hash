@@ -33,8 +33,8 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
 
         let read: String = String::from_utf8_lossy(&b_read).to_string();
 
-        let mut pos_read_id = read_id.clone();
-        pos_read_id.push('+');
+        let pos_read_id = read_id.clone();
+        //pos_read_id.push('+');
         sequences.push((pos_read_id, read));
         if amb_mode {
             b_read.reverse();
@@ -51,6 +51,7 @@ pub fn read_sequence_w_path(file_path: &str, amb_mode: bool) -> Vec<(String, Str
     sequences
 }
 
+// MODIFICATA PER CONFRONTO RECGRAPH, TEMPORANEO
 pub fn output_formatter(seeds: &Vec<SeedKmer>, id: &String) {
     let mut outputs = String::new();
     let out_path: String = cli::get_out_file();
@@ -117,7 +118,7 @@ fn get_paths(v: &BitVec) -> String {
     let mut paths_vec = Vec::new();
     for (path, is_present) in v.iter().enumerate() {
         if is_present {
-            paths_vec.push((path).to_string())
+            paths_vec.push((path+1).to_string())
         }
     }
     paths_vec.join(",")
