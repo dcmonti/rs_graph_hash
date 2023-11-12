@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use serde::Deserialize;
 use serde::Serialize;
 
-#[derive(Clone, Debug, Copy, Serialize, Deserialize)]
+#[derive(Clone, Debug, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Coordinate {
     pub node_id: usize,
     pub offset: usize,

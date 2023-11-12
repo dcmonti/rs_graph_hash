@@ -3,7 +3,8 @@ use rs_graph_hash::chaining;
 use rs_graph_hash::cli;
 use rs_graph_hash::dump;
 use rs_graph_hash::io_parser;
-use rs_graph_hash::kmers_extraction;
+use rs_graph_hash::minimizer_extraction;
+use rs_graph_hash::unique_kmers_extraction;
 use rs_graph_hash::kmers_match;
 use rs_graph_hash::seed_filter;
 use std::panic;
@@ -26,13 +27,13 @@ fn main() {
                 let graph = io_parser::read_graph_w_path(&graph_path);
 
                 // Extract graph's unique k-mers
-                let unique_kmers = kmers_extraction::extract_unique_kmers(&graph, k);
+                let unique_kmers = unique_kmers_extraction::extract_unique_kmers(&graph, k);
 
                 // Parallel kmer match
                 reads.par_iter().for_each(|(id, read)| {
 
                     // Extract read's seeds
-                    let mut seeds = kmers_match::match_read_kmers(
+                    let mut seeds = kmers_match::match_unique_read_kmers(
                         &read,
                         &unique_kmers,
                         k,
@@ -51,7 +52,7 @@ fn main() {
 
                 // Parallel kmer match.
                 reads.par_iter().for_each(|(id, read)| {
-                    let seeds = kmers_match::match_read_kmers(
+                    let seeds = kmers_match::match_unique_read_kmers(
                         &read,
                         &unique_kmers,
                         k,
@@ -63,12 +64,37 @@ fn main() {
             }
             2 => {
                 let graph = io_parser::read_graph_w_path(&graph_path);
-                let unique_kmers = kmers_extraction::extract_unique_kmers(&graph, k);
+                let unique_kmers = unique_kmers_extraction::extract_unique_kmers(&graph, k);
                 let out_file = cli::get_out_file();
                 if out_file == "standard output" {
                     panic!("output file for .dmp must be specified")
                 }
                 dump::dump_unique_kmers(&unique_kmers, k, &out_file);
+            }
+
+            3 => {
+                let reads = io_parser::read_sequence_w_path(&read_path, amb_mode);
+                let graph = io_parser::read_graph_w_path(&graph_path);
+                let w_len = k*3/2;
+                // Extract graph's unique k-mers
+                let minimizer = minimizer_extraction::extract(&graph, k, w_len);
+                
+                // Parallel kmer match
+                reads.par_iter().for_each(|(id, read)| {
+
+                    // Extract read's seeds
+                    let seeds = kmers_match::match_minimizer_read_kmers(
+                        &read,
+                        &minimizer,
+                        k,
+                        base_skip,
+                        seed_merge,
+                    );
+                    //seed_filter::filter(&mut seeds, k);
+                    // Chaining
+                    // chaining::execute(&seeds, &graph, &read);
+                    io_parser::output_formatter(&seeds, &id);
+                });
             }
 
             _ => {
